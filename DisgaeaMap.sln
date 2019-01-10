@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2046
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DisgaeaMap", "DisgaeaMap\DisgaeaMap.csproj", "{8A77D053-4B36-48BB-87BE-D277277915EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cobalt", "..\Cobalt\Cobalt\Cobalt.csproj", "{28763CB6-1526-4FDA-9C85-79C87D485DD1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8A77D053-4B36-48BB-87BE-D277277915EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A77D053-4B36-48BB-87BE-D277277915EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A77D053-4B36-48BB-87BE-D277277915EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A77D053-4B36-48BB-87BE-D277277915EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28763CB6-1526-4FDA-9C85-79C87D485DD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28763CB6-1526-4FDA-9C85-79C87D485DD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28763CB6-1526-4FDA-9C85-79C87D485DD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28763CB6-1526-4FDA-9C85-79C87D485DD1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {865B4650-F667-483C-A7A3-2FEA7882E60E}
+	EndGlobalSection
+EndGlobal
