@@ -145,6 +145,7 @@ namespace DisgaeaMap
 			//GL.Enable(EnableCap.CullFace);
 			GL.PointSize(5.0f);
 
+#if DEBUG
 			if (Environment.MachineName.ToUpperInvariant() == "RIN-CORE")
 			{
 				var file = string.Empty;
@@ -169,6 +170,7 @@ namespace DisgaeaMap
 
 				//faceBinary = LoadFile<FaceBinary>(faceFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\start.dat (Output)\face.dat");
 			}
+#endif
 		}
 
 		private void renderControl_Render(object sender, EventArgs e)
