@@ -78,7 +78,7 @@ namespace DisgaeaMap.MpdParser
 			switch (tileFace)
 			{
 				case TileFace.Top:
-					/*if (tile.GeoPanelFlag == 100)
+					if (tile.GeoPanelFlag == 100)
 					{
 						switch (tile.GeoPanelColor)
 						{
@@ -86,7 +86,7 @@ namespace DisgaeaMap.MpdParser
 							case 1: color = Color4.LightGreen; break;
 							case 2: color = Color4.CornflowerBlue; break;
 						}
-					}*/
+					}
 					vertices = new MpdVertex[]
 					{
 						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.SW), Color = color },

@@ -32,6 +32,10 @@ namespace DisgaeaMap
 				{
 					mapsDirectory = fbdMapsDirectory.SelectedPath;
 				}
+				else
+				{
+					DialogResult = DialogResult.Cancel;
+				}
 			}
 
 			if (knownMaps.Count == 0)

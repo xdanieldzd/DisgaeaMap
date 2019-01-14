@@ -28,6 +28,7 @@ namespace DisgaeaMap
 		static readonly string projectionMatrixName = "projection_matrix";
 		static readonly string modelviewMatrixName = "modelview_matrix";
 		static readonly string wireframeName = "wireframe";
+		static readonly string geoPanelsName = "geoPanels";
 
 		(string Name, Version Version, string Description, string Copyright) programInfo;
 
@@ -49,7 +50,7 @@ namespace DisgaeaMap
 		Texture emptyTexture;
 
 		OpenTK.Input.KeyboardState lastKbd;
-		bool wireframe, textOverlay;
+		bool wireframe, geoPanels, textOverlay;
 
 		bool busy, takeShot;
 
@@ -84,12 +85,14 @@ namespace DisgaeaMap
 		{
 			using (var mapSelectForm = new MapSelectForm())
 			{
-				mapSelectForm.ShowDialog();
-				if (mapSelectForm.Tag is ValueTuple<string, string> map)
+				if (mapSelectForm.DialogResult == DialogResult.None && mapSelectForm.ShowDialog() == DialogResult.OK)
 				{
-					(string dat, string mpd) = map;
-					mapBinary = LoadFile<MapBinary>(mapFilename = dat);
-					mpdBinary = LoadFile<MpdBinary>(mpdFilename = mpd);
+					if (mapSelectForm.Tag is ValueTuple<string, string> map)
+					{
+						(string dat, string mpd) = map;
+						mapBinary = LoadFile<MapBinary>(mapFilename = dat);
+						mpdBinary = LoadFile<MpdBinary>(mpdFilename = mpd);
+					}
 				}
 			}
 		}
@@ -127,6 +130,7 @@ namespace DisgaeaMap
 
 			lastKbd = OpenTK.Input.Keyboard.GetState();
 			wireframe = false;
+			geoPanels = false;
 			textOverlay = true;
 
 			mapFilename = string.Empty;
@@ -183,9 +187,7 @@ namespace DisgaeaMap
 
 			if (!busy && !takeShot)
 			{
-				if (ContainsFocus &&
-					renderControl.ClientRectangle.Contains(renderControl.PointToClient(Cursor.Position)) &&
-					!menuStrip1.Items.Cast<ToolStripMenuItem>().Any(x => x.DropDown.Visible))
+				if (ContainsFocus)
 				{
 					OpenTK.Input.KeyboardState kbdState = OpenTK.Input.Keyboard.GetState();
 
@@ -195,7 +197,10 @@ namespace DisgaeaMap
 					if (kbdState[OpenTK.Input.Key.F2] && !lastKbd[OpenTK.Input.Key.F2])
 						renderControl.VSync = !renderControl.VSync;
 
-					if (kbdState[OpenTK.Input.Key.F4] && !lastKbd[OpenTK.Input.Key.F4])
+					if (kbdState[OpenTK.Input.Key.F3] && !lastKbd[OpenTK.Input.Key.F3])
+						geoPanels = !geoPanels;
+
+					if (kbdState[OpenTK.Input.Key.F11] && !lastKbd[OpenTK.Input.Key.F11])
 						textOverlay = !textOverlay;
 
 					if (kbdState[OpenTK.Input.Key.F12] && !lastKbd[OpenTK.Input.Key.F12])
@@ -203,7 +208,9 @@ namespace DisgaeaMap
 
 					lastKbd = kbdState;
 
-					camera.Update(Core.DeltaTime);
+					if (renderControl.ClientRectangle.Contains(renderControl.PointToClient(Cursor.Position)) &&
+						!menuStrip1.Items.Cast<ToolStripMenuItem>().Any(x => x.DropDown.Visible))
+						camera.Update(Core.DeltaTime);
 				}
 			}
 
@@ -252,6 +259,7 @@ namespace DisgaeaMap
 			{
 				floorShader.Activate();
 				floorShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
+				floorShader.SetUniform(geoPanelsName, geoPanels ? 1 : 0);
 
 				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 				floorShader.SetUniform(wireframeName, 0);
@@ -296,8 +304,12 @@ namespace DisgaeaMap
 				StringBuilder builder = new StringBuilder();
 				builder.Append($"Cobalt v{Core.LibraryVersion} - OpenTK v{Core.OpenTKVersion}\n");
 				builder.Append($"{Core.CurrentFramesPerSecond:0.00} FPS\n");
+				builder.AppendLine();
 				builder.Append($"F1: Wireframe ({wireframe})\n");
 				builder.Append($"F2: Vsync ({renderControl.VSync})\n");
+				builder.Append($"F3: Geo Panels ({geoPanels})\n");
+				builder.AppendLine();
+				builder.Append($"F11: Show HUD ({textOverlay})\n");
 				builder.Append($"F12: Screenshot");
 				font.DrawString(8.0f, 8.0f, builder.ToString());
 			}

@@ -31,12 +31,13 @@
 			this.btnOpen = new System.Windows.Forms.Button();
 			this.lbMaps = new System.Windows.Forms.ListBox();
 			this.fbdMapsDirectory = new System.Windows.Forms.FolderBrowserDialog();
+			this.btnCancel = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// btnOpen
 			// 
 			this.btnOpen.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnOpen.Location = new System.Drawing.Point(217, 247);
+			this.btnOpen.Location = new System.Drawing.Point(136, 247);
 			this.btnOpen.Name = "btnOpen";
 			this.btnOpen.Size = new System.Drawing.Size(75, 23);
 			this.btnOpen.TabIndex = 1;
@@ -60,12 +61,26 @@
 			// fbdMapsDirectory
 			// 
 			this.fbdMapsDirectory.Description = "Select maps directory, contains mp*.(dat|mpd) files.";
+			this.fbdMapsDirectory.ShowNewFolderButton = false;
+			// 
+			// btnCancel
+			// 
+			this.btnCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnCancel.Location = new System.Drawing.Point(217, 247);
+			this.btnCancel.Name = "btnCancel";
+			this.btnCancel.Size = new System.Drawing.Size(75, 23);
+			this.btnCancel.TabIndex = 2;
+			this.btnCancel.Text = "&Cancel";
+			this.btnCancel.UseVisualStyleBackColor = true;
 			// 
 			// MapSelectForm
 			// 
+			this.AcceptButton = this.btnOpen;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.CancelButton = this.btnCancel;
 			this.ClientSize = new System.Drawing.Size(304, 282);
+			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.lbMaps);
 			this.Controls.Add(this.btnOpen);
 			this.DoubleBuffered = true;
@@ -86,5 +101,6 @@
 		private System.Windows.Forms.Button btnOpen;
 		private System.Windows.Forms.ListBox lbMaps;
 		private System.Windows.Forms.FolderBrowserDialog fbdMapsDirectory;
+		private System.Windows.Forms.Button btnCancel;
 	}
 }
