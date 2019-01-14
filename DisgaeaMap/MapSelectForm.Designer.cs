@@ -60,7 +60,7 @@
 			// 
 			// fbdMapsDirectory
 			// 
-			this.fbdMapsDirectory.Description = "Select maps directory, contains mp*.(dat|mpd) files.";
+			this.fbdMapsDirectory.Description = "Select Disgaea 1 data directory, contains start.dat and mp*.(dat|mpd) files.";
 			this.fbdMapsDirectory.ShowNewFolderButton = false;
 			// 
 			// btnCancel
