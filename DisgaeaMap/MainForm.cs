@@ -45,7 +45,7 @@ namespace DisgaeaMap
 		//FaceBinary faceBinary;
 
 		Camera camera;
-		Shader floorShader, objectShader;
+		Shader floorShader, objectShader, actorShader;
 		CobaltFont font;
 		Texture emptyTexture;
 
@@ -116,6 +116,7 @@ namespace DisgaeaMap
 			camera = new Camera();
 			floorShader = new Shader(System.IO.File.ReadAllText(@"Assets\\FloorVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\FloorFragmentShader.glsl"));
 			objectShader = new Shader(System.IO.File.ReadAllText(@"Assets\\ObjectVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\ObjectFragmentShader.glsl"));
+			actorShader = new Shader(System.IO.File.ReadAllText(@"Assets\\ActorVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\ActorFragmentShader.glsl"));
 
 			try
 			{
@@ -142,6 +143,8 @@ namespace DisgaeaMap
 
 			objectShader?.SetUniform("texture", 0);
 
+			actorShader?.SetUniform("texture", 0);
+
 			GL.Enable(EnableCap.Blend);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 
@@ -154,12 +157,9 @@ namespace DisgaeaMap
 			{
 				var file = string.Empty;
 
-				file = "mp00204";       //magnificent gate
 				file = "mp00201";       //blessed court
 				file = "mp00202";       //corridor of love
-				file = "mp00104";       //practice map
 				file = "mp03102";       //UNUSED geoeffects map
-				file = "mp00101";       //tutorial basics1
 
 				file = "mp00501";       //icy breath
 				file = "mp21002";       //rank1 exam/dark assembly
@@ -168,6 +168,10 @@ namespace DisgaeaMap
 				file = "mp00603";       //witches den
 				file = "mp01302";       //hall of justice
 				file = "mp05104";       //dark castle/shop-gate-area
+
+				file = "mp00204";       //magnificent gate
+				file = "mp00101";       //tutorial basics1
+				file = "mp00104";       //practice map
 
 				mapBinary = LoadFile<MapBinary>(mapFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.dat");
 				mpdBinary = LoadFile<MpdBinary>(mpdFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.mpd");
@@ -272,8 +276,18 @@ namespace DisgaeaMap
 					GL.PolygonOffset(-1.0f, 1.0f);
 					floorShader.SetUniform(wireframeName, 1);
 					mpdBinary?.RenderFloor(mapBinary, floorShader);
+
 					GL.Disable(EnableCap.PolygonOffsetLine);
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 				}
+			}
+
+			if (actorShader != null)
+			{
+				actorShader.Activate();
+				actorShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
+
+				mpdBinary.RenderActors(actorShader);
 			}
 
 			if (takeShot)
@@ -326,6 +340,7 @@ namespace DisgaeaMap
 
 			objectShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
 			floorShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
+			actorShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
 
 			if (font != null)
 				font.SetScreenSize(renderControl.ClientRectangle.Width, renderControl.ClientRectangle.Height);

@@ -33,7 +33,10 @@ namespace DisgaeaMap.MpdParser
 		public Chunk[] Chunks { get; private set; }
 
 		public Dictionary<Chunk, Tile[]> Tiles { get; private set; }
-		public List<List<(Mesh, Texture[], BlendMode[])>> Meshes { get; private set; }
+		public List<List<(Mesh, Texture[], BlendMode[])>> TileMeshes { get; private set; }
+
+		public Actor[] Actors { get; private set; }
+		public Dictionary<Actor, Mesh> ActorMeshes { get; private set; }
 
 		public MpdBinary(Stream stream, Endian endianness = Endian.LittleEndian) : base(stream, endianness) { }
 
@@ -56,9 +59,12 @@ namespace DisgaeaMap.MpdParser
 				for (int i = 0; i < chunk.NumTiles; i++) tiles[i] = new Tile(stream);
 				Tiles.Add(chunk, tiles);
 			}
+
+			Actors = new Actor[NumActors];
+			for (int i = 0; i < Actors.Length; i++) Actors[i] = new Actor(stream);
 		}
 
-		private MpdVertex[] GenerateTileVertices(Chunk chunk, Tile tile, TileFace tileFace)
+		private MpdTileVertex[] GenerateTileVertices(Chunk chunk, Tile tile, TileFace tileFace)
 		{
 			var x = (((chunk.MapOffsetX - 6) / 12) + tile.XCoordinate) * 12.0f;
 			var z = (((chunk.MapOffsetZ - 6) / 12) + tile.ZCoordinate) * 12.0f;
@@ -74,7 +80,7 @@ namespace DisgaeaMap.MpdParser
 			//  |   |    |   |
 			//  0---1   SW---SE
 
-			MpdVertex[] vertices;
+			MpdTileVertex[] vertices;
 			switch (tileFace)
 			{
 				case TileFace.Top:
@@ -87,57 +93,57 @@ namespace DisgaeaMap.MpdParser
 							case 2: color = Color4.CornflowerBlue; break;
 						}
 					}
-					vertices = new MpdVertex[]
+					vertices = new MpdTileVertex[]
 					{
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.SW), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.SE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.NE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.NW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.SW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.SE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.NE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.TopMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.TopShadow1, tileFace, QuadVertex.NW), Color = color },
 					};
 					break;
 
 				case TileFace.South:
-					vertices = new MpdVertex[]
+					vertices = new MpdTileVertex[]
 					{
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.SouthVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.SW), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.SouthVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.SE), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.NE), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.NW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.SouthVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.SW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.SouthVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.SE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.NE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.SouthMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.SouthShadow, tileFace, QuadVertex.NW), Color = color },
 					};
 					break;
 
 				case TileFace.East:
-					vertices = new MpdVertex[]
+					vertices = new MpdTileVertex[]
 					{
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.EastVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.SW), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.EastVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.SE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.NE), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.NW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.EastVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.SW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.EastVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.SE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.NE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.EastMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.EastShadow, tileFace, QuadVertex.NW), Color = color },
 					};
 					break;
 
 				case TileFace.North:
-					vertices = new MpdVertex[]
+					vertices = new MpdTileVertex[]
 					{
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.NorthVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.SW), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.NorthVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.SE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.NE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.NW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.NorthVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.SW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.NorthVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.SE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.NE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNE, z + 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.NorthMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.NorthShadow, tileFace, QuadVertex.NW), Color = color },
 					};
 					break;
 
 				case TileFace.West:
-					vertices = new MpdVertex[]
+					vertices = new MpdTileVertex[]
 					{
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.WestVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.SW), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.WestVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.SE), Color = color },
-						new MpdVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.NE), Color = color },
-						new MpdVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.NW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.WestVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.SW), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.SW), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.WestVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.SE), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.SE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x - 6.0f, -tile.TopVertexSW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.NE), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.NE), Color = color },
+						new MpdTileVertex() { Position = new Vector4(x + 6.0f, -tile.TopVertexNW, z - 6.0f, 1.0f), TexCoord0 = GetTextureCoordinates(tile.WestMain, tileFace, QuadVertex.NW), TexCoord1 = GetTextureCoordinates(tile.WestShadow, tileFace, QuadVertex.NW), Color = color },
 					};
 					break;
 
 				default:
-					vertices = new MpdVertex[0];
+					vertices = new MpdTileVertex[0];
 					break;
 			}
 
@@ -261,9 +267,9 @@ namespace DisgaeaMap.MpdParser
 
 			if (false)
 			{
-				if (Meshes == null)
+				if (TileMeshes == null)
 				{
-					Meshes = new List<List<(Mesh, Texture[], BlendMode[])>>();
+					TileMeshes = new List<List<(Mesh, Texture[], BlendMode[])>>();
 
 					var dummyTexture = new Bitmap(32, 32, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 					using (Graphics g = Graphics.FromImage(dummyTexture))
@@ -288,7 +294,7 @@ namespace DisgaeaMap.MpdParser
 								{
 									foreach (var blend1 in (BlendMode[])Enum.GetValues(typeof(BlendMode)))
 									{
-										var vertices = new List<MpdVertex>();
+										var vertices = new List<MpdTileVertex>();
 
 										foreach (var tile in tiles)
 										{
@@ -330,15 +336,15 @@ namespace DisgaeaMap.MpdParser
 							}
 						}
 
-						Meshes.Add(chunkMeshes);
+						TileMeshes.Add(chunkMeshes);
 					}
 				}
 			}
 			else
 			{
-				if (Meshes == null)
+				if (TileMeshes == null)
 				{
-					Meshes = new List<List<(Mesh, Texture[], BlendMode[])>>();
+					TileMeshes = new List<List<(Mesh, Texture[], BlendMode[])>>();
 					foreach (var chunk in Chunks)
 					{
 						var tiles = Tiles[chunk];
@@ -400,12 +406,12 @@ namespace DisgaeaMap.MpdParser
 							}
 						}
 
-						Meshes.Add(chunkMeshes);
+						TileMeshes.Add(chunkMeshes);
 					}
 				}
 			}
 
-			foreach (var chunkMeshes in Meshes)
+			foreach (var chunkMeshes in TileMeshes)
 			{
 				foreach (var (mesh, textures, blendMode) in chunkMeshes)
 				{
@@ -422,10 +428,60 @@ namespace DisgaeaMap.MpdParser
 				}
 			}
 		}
+
+		public void RenderActors(Cobalt.Shader shader)
+		{
+			if (ActorMeshes == null)
+			{
+				ActorMeshes = new Dictionary<Actor, Mesh>();
+
+				foreach (var actor in Actors)
+				{
+					var mesh = new Mesh();
+					mesh.SetPrimitiveType(PrimitiveType.Quads);
+
+					var x = (actor.X * 12.0f);
+					var y = 0.0f;
+					var z = (actor.Z * 12.0f);
+
+					foreach (var chunk in Chunks)
+					{
+						foreach (var tile in Tiles[chunk])
+						{
+							var tx = (((chunk.MapOffsetX - 6) / 12) + tile.XCoordinate);
+							var tz = (((chunk.MapOffsetZ - 6) / 12) + tile.ZCoordinate);
+
+							if (tx == actor.X && tz == actor.Z)
+							{
+								y = -((tile.TopVertexNE + tile.TopVertexNW + tile.TopVertexSE + tile.TopVertexSW) / 4) + 0.1f;
+								break;
+							}
+						}
+					}
+
+					var color = Color4.Red;
+					var vertices = new MpdActorVertex[]
+					{
+						new MpdActorVertex() { Position = new Vector4(x - 0.0f, y +  0.0f, z - 6.0f, 1.0f), TexCoord = Vector2.Zero, Color = color },
+						new MpdActorVertex() { Position = new Vector4(x - 0.0f, y +  0.0f, z + 6.0f, 1.0f), TexCoord = Vector2.Zero, Color = color },
+						new MpdActorVertex() { Position = new Vector4(x - 0.0f, y + 12.0f, z + 6.0f, 1.0f), TexCoord = Vector2.Zero, Color = color },
+						new MpdActorVertex() { Position = new Vector4(x - 0.0f, y + 12.0f, z - 6.0f, 1.0f), TexCoord = Vector2.Zero, Color = color },
+					};
+					mesh.SetVertexData(vertices);
+
+					ActorMeshes.Add(actor, mesh);
+				}
+			}
+
+			foreach (var actorMesh in ActorMeshes)
+			{
+				actorMesh.Value.Render();
+			}
+		}
 	}
 
 	[StructLayout(LayoutKind.Sequential, Pack = 1)]
-	public struct MpdVertex : IVertexStruct
+	public struct MpdTileVertex : IVertexStruct
 	{
 		[VertexElement(AttributeIndex = 0)]
 		public Vector4 Position;
@@ -435,5 +491,16 @@ namespace DisgaeaMap.MpdParser
 		public Vector2 TexCoord0;
 		[VertexElement(AttributeIndex = 3)]
 		public Vector2 TexCoord1;
+	}
+
+	[StructLayout(LayoutKind.Sequential, Pack = 1)]
+	public struct MpdActorVertex : IVertexStruct
+	{
+		[VertexElement(AttributeIndex = 0)]
+		public Vector4 Position;
+		[VertexElement(AttributeIndex = 1)]
+		public Color4 Color;
+		[VertexElement(AttributeIndex = 2)]
+		public Vector2 TexCoord;
 	}
 }

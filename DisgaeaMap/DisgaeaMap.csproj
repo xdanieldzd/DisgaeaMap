@@ -87,6 +87,7 @@
     <Compile Include="ModelParser\MapBinary.cs" />
     <Compile Include="ModelParser\FloorTextureChunk.cs" />
     <Compile Include="ModelParser\ObjectTextureData.cs" />
+    <Compile Include="MpdParser\Actor.cs" />
     <Compile Include="MpdParser\Chunk.cs" />
     <Compile Include="TransformData.cs" />
     <Compile Include="MpdParser\Tile.cs" />
@@ -113,6 +114,12 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="Assets\ActorFragmentShader.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="Assets\ActorVertexShader.glsl">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Assets\ObjectVertexShader.glsl">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
