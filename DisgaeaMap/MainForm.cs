@@ -104,7 +104,7 @@ namespace DisgaeaMap
 
 		private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show($"{programInfo.Name} v{programInfo.Version.ToString(2)} - {programInfo.Description}\n\n{programInfo.Copyright}\n\nVarious notes from & greetings to the Netherworld Research wiki\nhttps://disgaea.rustedlogic.net/", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			MessageBox.Show($"{programInfo.Name} v{programInfo.Version.ToString(programInfo.Version.Build != 0 ? 3 : 2)} - {programInfo.Description}\n\n{programInfo.Copyright}\n\nVarious notes from & greetings to the Netherworld Research wiki\nhttps://disgaea.rustedlogic.net/", "About", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 		private void renderControl_Load(object sender, EventArgs e)
@@ -183,7 +183,7 @@ namespace DisgaeaMap
 
 		private void renderControl_Render(object sender, EventArgs e)
 		{
-			Text = $"{programInfo.Name} v{programInfo.Version.ToString(2)} - [{(mapFilename != string.Empty ? mapFilename : "no dat")}, {(mpdFilename != string.Empty ? mpdFilename : "no mpd")}]";
+			Text = $"{programInfo.Name} v{programInfo.Version.ToString(programInfo.Version.Build != 0 ? 3 : 2)} - [{(mapFilename != string.Empty ? mapFilename : "no dat")}, {(mpdFilename != string.Empty ? mpdFilename : "no mpd")}]";
 
 			RenderControl renderControl = (sender as RenderControl);
 
