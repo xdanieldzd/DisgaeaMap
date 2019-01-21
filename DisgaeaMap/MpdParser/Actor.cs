@@ -14,8 +14,8 @@ namespace DisgaeaMap.MpdParser
 		public ushort ID { get; private set; }
 		public ushort Level { get; private set; }
 		public byte Unknown0x04 { get; private set; }
-		public sbyte Z { get; private set; }
 		public sbyte X { get; private set; }
+		public sbyte Z { get; private set; }
 		public sbyte Rotation { get; private set; }
 		public byte Unknown0x08 { get; private set; }
 		public byte AI { get; private set; }
@@ -44,8 +44,8 @@ namespace DisgaeaMap.MpdParser
 			ID = reader.ReadUInt16();
 			Level = reader.ReadUInt16();
 			Unknown0x04 = reader.ReadByte();
-			Z = reader.ReadSByte();
 			X = reader.ReadSByte();
+			Z = reader.ReadSByte();
 			Rotation = reader.ReadSByte();
 			Unknown0x08 = reader.ReadByte();
 			AI = reader.ReadByte();

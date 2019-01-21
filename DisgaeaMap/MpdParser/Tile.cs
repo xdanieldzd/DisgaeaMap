@@ -53,8 +53,8 @@ namespace DisgaeaMap.MpdParser
 		public byte Unknown0x6F { get; private set; }
 
 		public byte Unknown0x70 { get; private set; }
-		public byte ZCoordinate { get; private set; }
 		public byte XCoordinate { get; private set; }
+		public byte ZCoordinate { get; private set; }
 		public byte Unknown0x73 { get; private set; }
 		public byte Unknown0x74 { get; private set; }
 		public byte Unknown0x75 { get; private set; }
@@ -111,8 +111,8 @@ namespace DisgaeaMap.MpdParser
 			Unknown0x6F = reader.ReadByte();
 
 			Unknown0x70 = reader.ReadByte();
-			ZCoordinate = reader.ReadByte();
 			XCoordinate = reader.ReadByte();
+			ZCoordinate = reader.ReadByte();
 			Unknown0x73 = reader.ReadByte();
 			Unknown0x74 = reader.ReadByte();
 			Unknown0x75 = reader.ReadByte();

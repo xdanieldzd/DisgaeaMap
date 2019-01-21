@@ -68,33 +68,36 @@ namespace DisgaeaMap
 			if (validMaps.Count == 0)
 			{
 				var dungeonDatData = GetDungeonData();
-				var maps = ParseDungeonData(dungeonDatData);
-
-				foreach (var (mapName, mapId) in maps)
+				if (dungeonDatData != null)
 				{
-					var idString = $"mp{mapId:D5}";
-					var mapMpd = Path.Combine(dataDirectory, $"{idString}.mpd");
-					var mapDat = Path.Combine(dataDirectory, $"{idString}.dat");
+					var maps = ParseDungeonData(dungeonDatData);
 
-					if (File.Exists(mapMpd) && File.Exists(mapDat))
+					foreach (var (mapName, mapId) in maps)
 					{
-						var mapNameAscii = new StringBuilder();
-						foreach (var chr in mapName)
-							mapNameAscii.Append(shiftJisToAscii.ContainsKey(chr) ? shiftJisToAscii[chr] : chr);
+						var idString = $"mp{mapId:D5}";
+						var mapMpd = Path.Combine(dataDirectory, $"{idString}.mpd");
+						var mapDat = Path.Combine(dataDirectory, $"{idString}.dat");
 
-						validMaps.Add($"{mapNameAscii} ({idString})", (mapDat, mapMpd));
+						if (File.Exists(mapMpd) && File.Exists(mapDat))
+						{
+							var mapNameAscii = new StringBuilder();
+							foreach (var chr in mapName)
+								mapNameAscii.Append(shiftJisToAscii.ContainsKey(chr) ? shiftJisToAscii[chr] : chr);
+
+							validMaps.Add($"{mapNameAscii} ({idString})", (mapDat, mapMpd));
+						}
 					}
-				}
 
-				var mapDatFiles = Directory.EnumerateFiles(dataDirectory, "mp*.dat");
-				var mapMpdFiles = Directory.EnumerateFiles(dataDirectory, "mp*.mpd");
+					var mapDatFiles = Directory.EnumerateFiles(dataDirectory, "mp*.dat");
+					var mapMpdFiles = Directory.EnumerateFiles(dataDirectory, "mp*.mpd");
 
-				foreach (var mapDat in mapDatFiles.Where(x => !validMaps.Any(y => y.Key.Contains(Path.GetFileNameWithoutExtension(x)))))
-				{
-					var mapMpd = mapMpdFiles.Where(x => x.Contains(Path.GetFileNameWithoutExtension(mapDat)));
-					if (mapMpd.Count() == 1)
+					foreach (var mapDat in mapDatFiles.Where(x => !validMaps.Any(y => y.Key.Contains(Path.GetFileNameWithoutExtension(x)))))
 					{
-						validMaps.Add(Path.GetFileNameWithoutExtension(mapDat), (mapDat, mapMpd.FirstOrDefault()));
+						var mapMpd = mapMpdFiles.Where(x => x.Contains(Path.GetFileNameWithoutExtension(mapDat)));
+						if (mapMpd.Count() == 1)
+						{
+							validMaps.Add(Path.GetFileNameWithoutExtension(mapDat), (mapDat, mapMpd.FirstOrDefault()));
+						}
 					}
 				}
 			}

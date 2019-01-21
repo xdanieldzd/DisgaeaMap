@@ -109,7 +109,7 @@ namespace DisgaeaMap
 
 		private void renderControl_Load(object sender, EventArgs e)
 		{
-			eye = new Vector3(0.0f, 0.0f, 15.0f);
+			eye = new Vector3(0.0f, 0.0f, -15.0f);
 			scale = 0.1f;
 			modelviewMatrix = Matrix4.CreateScale(scale) * Matrix4.LookAt(eye, Vector3.Zero, Vector3.UnitY);
 
@@ -131,7 +131,7 @@ namespace DisgaeaMap
 
 			lastKbd = OpenTK.Input.Keyboard.GetState();
 			wireframe = false;
-			geoPanels = false;
+			geoPanels = true;
 			textOverlay = true;
 
 			mapFilename = string.Empty;
@@ -170,8 +170,8 @@ namespace DisgaeaMap
 				file = "mp05104";       //dark castle/shop-gate-area
 
 				file = "mp00204";       //magnificent gate
-				file = "mp00101";       //tutorial basics1
 				file = "mp00104";       //practice map
+				file = "mp00101";       //tutorial basics1
 
 				mapBinary = LoadFile<MapBinary>(mapFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.dat");
 				mpdBinary = LoadFile<MpdBinary>(mpdFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.mpd");
