@@ -55,7 +55,7 @@ namespace DisgaeaMap.AnimParser
 				}
 			}
 
-			if (true)
+			if (false)
 			{
 				// TEMP dump stuff -- animations (tho they dont work right yet, herp derp!), spritesheets
 				var id = (ushort)0;
@@ -103,22 +103,26 @@ namespace DisgaeaMap.AnimParser
 			for (int i = 0; i < set.Unknown1s.Length; i++)
 			{
 				var unk1 = set.Unknown1s[i];
-				var unk5 = set.Unknown5s[unk1.IndexIntoUnknown5];
-				var unk2 = set.Unknown2s[unk5.IndexIntoUnknown2];
 
 				var subdir = $"Unknown1 {i}";
 				Directory.CreateDirectory(Path.Combine(path, dir, subdir));
 
-				var startFrame = unk2.Unknown0x00;
-				var endFrame = unk2.Unknown0x00 + unk2.Unknown0x02;
-
-				for (int f = startFrame; f < endFrame; f++)
+				var unk5 = set.Unknown5s[unk1.IndexIntoUnknown5];
+				for (int j = unk5.IndexIntoUnknown2; j < unk5.IndexIntoUnknown2 + unk5.Unknown0x02; j++)
 				{
-					var file = $"Unknown5 {unk1.IndexIntoUnknown5} - Unknown2 {unk5.IndexIntoUnknown2} - Frame {f:D2}.png";
+					var unk2 = set.Unknown2s[j];
 
-					var frame = set.Frames[f];
-					var bitmap = GetFrameBitmap(set, frame);
-					bitmap.Save(Path.Combine(path, dir, subdir, file));
+					var startFrame = unk2.Unknown0x00;
+					var endFrame = unk2.Unknown0x00 + unk2.Unknown0x02;
+
+					for (int f = startFrame; f < endFrame; f++)
+					{
+						var file = $"Unknown5 {unk1.IndexIntoUnknown5} - Unknown2 {j} - Frame {f:D2}.png";
+
+						var frame = set.Frames[f];
+						var bitmap = GetFrameBitmap(set, frame);
+						bitmap.Save(Path.Combine(path, dir, subdir, file));
+					}
 				}
 			}
 
@@ -135,9 +139,9 @@ namespace DisgaeaMap.AnimParser
 
 		public SpriteSet GetSpriteSet(ushort setId)
 		{
-			var idx = Array.IndexOf(SpriteSetIDs, setId);
-			if (idx == -1) throw new Exception($"Set for ID {setId} not found");
-			return SpriteSets[idx];
+			var mainId = (ushort)((setId / 10) * 10);
+			var idx = Array.IndexOf(SpriteSetIDs, mainId);
+			return (idx != -1 ? SpriteSets[idx] : null);
 		}
 
 		public Bitmap GetFrameBitmap(SpriteSet set, Frame frame)

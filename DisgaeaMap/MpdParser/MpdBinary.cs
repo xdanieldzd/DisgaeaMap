@@ -429,7 +429,7 @@ namespace DisgaeaMap.MpdParser
 			}
 		}
 
-		public void RenderActors(Cobalt.Shader shader)
+		public void RenderActors(Cobalt.Shader shader, AnimParser.AnmBinary mainAnimBinary)
 		{
 			if (ActorMeshes == null)
 			{
@@ -459,13 +459,32 @@ namespace DisgaeaMap.MpdParser
 						}
 					}
 
-					var color = (y == 0.0f ? Color4.Red : Color4.GreenYellow);
+					var color = (y == 0.0f ? Color4.Red : Color4.White);
+
+					var spriteSet = mainAnimBinary.GetSpriteSet(actor.ID);
+					if (spriteSet != null)
+					{
+						if ((actor.ID % 10) != 0)
+						{
+							// TODO: higher tier charas, different palettes
+							color = Color4.LightBlue;
+						}
+
+						var bitmap = mainAnimBinary.GetFrameBitmap(spriteSet, spriteSet.Frames[1]);
+						mesh.SetMaterial(new Material(new Texture(bitmap)));
+					}
+					else
+					{
+						mesh.SetMaterial(new Material(new Texture(new Bitmap(@"Assets\\EmptyTexture.png"))));
+						color = Color4.Orange;
+					}
+
 					var vertices = new MpdActorVertex[]
 					{
-						new MpdActorVertex() { Position = new Vector4(x - 6.0f, y +  0.0f, z, 1.0f), TexCoord = Vector2.Zero, Color = color },
-						new MpdActorVertex() { Position = new Vector4(x + 6.0f, y +  0.0f, z, 1.0f), TexCoord = Vector2.Zero, Color = color },
-						new MpdActorVertex() { Position = new Vector4(x + 6.0f, y + 12.0f, z, 1.0f), TexCoord = Vector2.Zero, Color = color },
-						new MpdActorVertex() { Position = new Vector4(x - 6.0f, y + 12.0f, z, 1.0f), TexCoord = Vector2.Zero, Color = color },
+						new MpdActorVertex() { Position = new Vector4(-0.5f, 0.0f, 0.0f, 1.0f), TexCoord = new Vector2(0.0f, 1.0f), Color = color, Offset = new Vector3(x, y, z) },
+						new MpdActorVertex() { Position = new Vector4( 0.5f, 0.0f, 0.0f, 1.0f), TexCoord = new Vector2(1.0f, 1.0f), Color = color, Offset = new Vector3(x, y, z) },
+						new MpdActorVertex() { Position = new Vector4( 0.5f, 1.0f, 0.0f, 1.0f), TexCoord = new Vector2(1.0f, 0.0f), Color = color, Offset = new Vector3(x, y, z) },
+						new MpdActorVertex() { Position = new Vector4(-0.5f, 1.0f, 0.0f, 1.0f), TexCoord = new Vector2(0.0f, 0.0f), Color = color, Offset = new Vector3(x, y, z) },
 					};
 					mesh.SetVertexData(vertices);
 
@@ -475,6 +494,8 @@ namespace DisgaeaMap.MpdParser
 
 			foreach (var actorMesh in ActorMeshes)
 			{
+				var texture = actorMesh.Value.GetMaterial().Texture;
+				shader.SetUniform("sprite_size", new Vector2(texture.Width / 32.0f, texture.Height / 32.0f));
 				actorMesh.Value.Render();
 			}
 		}
@@ -502,5 +523,7 @@ namespace DisgaeaMap.MpdParser
 		public Color4 Color;
 		[VertexElement(AttributeIndex = 2)]
 		public Vector2 TexCoord;
+		[VertexElement(AttributeIndex = 3)]
+		public Vector3 Offset;
 	}
 }

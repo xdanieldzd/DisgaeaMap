@@ -293,7 +293,10 @@ namespace DisgaeaMap
 				actorShader.Activate();
 				actorShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
 
-				mpdBinary?.RenderActors(actorShader);
+				GL.DepthMask(false);
+				mpdBinary?.RenderActors(actorShader, mainAnimBinary);
+				GL.DepthMask(true);
+				mpdBinary?.RenderActors(actorShader, mainAnimBinary);
 			}
 
 			if (takeShot)
