@@ -13,8 +13,8 @@ namespace DisgaeaMap.AnimParser
 	{
 		public byte Unknown0x00 { get; private set; }
 		public byte Unknown0x01 { get; private set; }
-		public byte Unknown0x02 { get; private set; }       // spritesheet number?
-		public byte Unknown0x03 { get; private set; }
+		public byte SpriteSheetIndex { get; private set; }
+		public byte PaletteIndex { get; private set; }
 		public short Unknown0x04 { get; private set; }      // usually negative?
 		public short Unknown0x06 { get; private set; }      // usually negative?
 		public ushort SourceX { get; private set; }
@@ -25,7 +25,7 @@ namespace DisgaeaMap.AnimParser
 		public ushort ScaleY { get; private set; }
 		public short Unknown0x14 { get; private set; }
 		public short Unknown0x16 { get; private set; }
-		public ushort Unknown0x18 { get; private set; }
+		public ushort RotationAngle { get; private set; }
 		public byte Unknown0x1A { get; private set; }
 		public byte Unknown0x1B { get; private set; }
 
@@ -37,8 +37,8 @@ namespace DisgaeaMap.AnimParser
 
 			Unknown0x00 = reader.ReadByte();
 			Unknown0x01 = reader.ReadByte();
-			Unknown0x02 = reader.ReadByte();
-			Unknown0x03 = reader.ReadByte();
+			SpriteSheetIndex = reader.ReadByte();
+			PaletteIndex = reader.ReadByte();
 			Unknown0x04 = reader.ReadInt16();
 			Unknown0x06 = reader.ReadInt16();
 			SourceX = reader.ReadUInt16();
@@ -49,7 +49,7 @@ namespace DisgaeaMap.AnimParser
 			ScaleY = reader.ReadUInt16();
 			Unknown0x14 = reader.ReadInt16();
 			Unknown0x16 = reader.ReadInt16();
-			Unknown0x18 = reader.ReadUInt16();
+			RotationAngle = reader.ReadUInt16();
 			Unknown0x1A = reader.ReadByte();
 			Unknown0x1B = reader.ReadByte();
 		}

@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using System.Drawing;
-using System.Drawing.Imaging;
 
 using Cobalt.IO;
 
@@ -14,11 +13,11 @@ namespace DisgaeaMap.AnimParser
 	public class SpriteSet : BaseChunk
 	{
 		/* Header; offsets relative to here (i.e. 0x10) */
-		public ushort FrameIDMappingsCount { get; private set; }
-		public ushort Unknown2Count { get; private set; }           // 0x06 for hitspr1, 0x17C for laharl
-		public ushort Unknown3Count { get; private set; }           // 0x01 for hitspr1, 0x01 for laharl
+		public ushort Unknown1Count { get; private set; }
+		public ushort Unknown2Count { get; private set; }
+		public ushort Unknown3Count { get; private set; }
 		public ushort SpriteSheetCount { get; private set; }
-		public ushort Unknown5Count { get; private set; }           // zero for hitspr1, 0x349 for laharl
+		public ushort Unknown5Count { get; private set; }
 		public ushort FramesCount { get; private set; }
 		public ushort Unknown7Count { get; private set; }           // 0x01 for hitspr1, 0x01 for laharl -- palette data block count or smth?
 		public ushort Unknown8Count { get; private set; }           // 0x01 for hitspr1, 0x08 for laharl -- same but pixel data blocks?
@@ -27,7 +26,7 @@ namespace DisgaeaMap.AnimParser
 		public uint PaletteDataOffset { get; private set; }
 		public uint PixelDataOffset { get; private set; }
 
-		public FrameIDMapping[] FrameIDMappings { get; private set; }
+		public Unknown1[] Unknown1s { get; private set; }
 		public Unknown2[] Unknown2s { get; private set; }
 		public Unknown3[] Unknown3s { get; private set; }
 		public SpriteSheet[] SpriteSheets { get; private set; }
@@ -44,11 +43,12 @@ namespace DisgaeaMap.AnimParser
 			base.ReadFromStream(stream, endianness);
 
 			long startPosition = stream.Position;
+			//if (startPosition == 0x5FBf0) { bool tmp = false; }
 
 			EndianBinaryReader reader = new EndianBinaryReader(stream, endianness);
 
 			/* Read header */
-			FrameIDMappingsCount = reader.ReadUInt16();
+			Unknown1Count = reader.ReadUInt16();
 			Unknown2Count = reader.ReadUInt16();
 			Unknown3Count = reader.ReadUInt16();
 			SpriteSheetCount = reader.ReadUInt16();
@@ -62,8 +62,8 @@ namespace DisgaeaMap.AnimParser
 			PixelDataOffset = reader.ReadUInt32();
 
 			/* Read data (1) */
-			FrameIDMappings = new FrameIDMapping[FrameIDMappingsCount];
-			for (int i = 0; i < FrameIDMappings.Length; i++) FrameIDMappings[i] = new FrameIDMapping(stream);
+			Unknown1s = new Unknown1[Unknown1Count];
+			for (int i = 0; i < Unknown1s.Length; i++) Unknown1s[i] = new Unknown1(stream);
 
 			Unknown2s = new Unknown2[Unknown2Count];
 			for (int i = 0; i < Unknown2s.Length; i++) Unknown2s[i] = new Unknown2(stream);
@@ -87,8 +87,10 @@ namespace DisgaeaMap.AnimParser
 			SpriteSheetBitmaps = new Bitmap[SpriteSheetCount][];
 			for (int i = 0; i < SpriteSheetBitmaps.Length; i++)
 			{
-				// TODO: multiple palettes
-				SpriteSheetBitmaps[i] = CreateSpriteSheetBitmaps(reader, startPosition, 1, SpriteSheets[i]);
+				// TODO/HACK: get palette count via max palette number in framedata
+				var palCount = Frames.Max(x => x.PaletteIndex) + 1;
+
+				SpriteSheetBitmaps[i] = CreateSpriteSheetBitmaps(reader, startPosition, palCount, SpriteSheets[i]);
 			}
 
 			stream.Position = (startPosition + (DataSize - 0x10));

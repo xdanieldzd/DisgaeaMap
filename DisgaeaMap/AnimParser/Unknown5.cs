@@ -11,7 +11,7 @@ namespace DisgaeaMap.AnimParser
 {
 	public class Unknown5 : ParsableData
 	{
-		public ushort Unknown0x00 { get; private set; }
+		public ushort IndexIntoUnknown2 { get; private set; }
 		public byte Unknown0x02 { get; private set; }
 		public byte Unknown0x03 { get; private set; }
 		public short Unknown0x04 { get; private set; }
@@ -23,7 +23,7 @@ namespace DisgaeaMap.AnimParser
 		{
 			EndianBinaryReader reader = new EndianBinaryReader(stream, endianness);
 
-			Unknown0x00 = reader.ReadUInt16();
+			IndexIntoUnknown2 = reader.ReadUInt16();
 			Unknown0x02 = reader.ReadByte();
 			Unknown0x03 = reader.ReadByte();
 			Unknown0x04 = reader.ReadInt16();
