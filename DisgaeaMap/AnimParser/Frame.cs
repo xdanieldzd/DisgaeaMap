@@ -11,10 +11,12 @@ namespace DisgaeaMap.AnimParser
 {
 	public class Frame : ParsableData
 	{
-		public short Unknown0x00 { get; private set; }  // low number, maybe unsigned? some id?
-		public short Unknown0x02 { get; private set; }  // low number, maybe unsigned? some id?
-		public short Unknown0x04 { get; private set; }  // usually negative?
-		public short Unknown0x06 { get; private set; }  // usually negative?
+		public byte Unknown0x00 { get; private set; }
+		public byte Unknown0x01 { get; private set; }
+		public byte Unknown0x02 { get; private set; }       // spritesheet number?
+		public byte Unknown0x03 { get; private set; }
+		public short Unknown0x04 { get; private set; }      // usually negative?
+		public short Unknown0x06 { get; private set; }      // usually negative?
 		public ushort SourceX { get; private set; }
 		public ushort SourceY { get; private set; }
 		public ushort SourceWidth { get; private set; }
@@ -33,7 +35,23 @@ namespace DisgaeaMap.AnimParser
 		{
 			EndianBinaryReader reader = new EndianBinaryReader(stream, endianness);
 
-			//
+			Unknown0x00 = reader.ReadByte();
+			Unknown0x01 = reader.ReadByte();
+			Unknown0x02 = reader.ReadByte();
+			Unknown0x03 = reader.ReadByte();
+			Unknown0x04 = reader.ReadInt16();
+			Unknown0x06 = reader.ReadInt16();
+			SourceX = reader.ReadUInt16();
+			SourceY = reader.ReadUInt16();
+			SourceWidth = reader.ReadUInt16();
+			SourceHeight = reader.ReadUInt16();
+			ScaleX = reader.ReadUInt16();
+			ScaleY = reader.ReadUInt16();
+			Unknown0x14 = reader.ReadInt16();
+			Unknown0x16 = reader.ReadInt16();
+			Unknown0x18 = reader.ReadUInt16();
+			Unknown0x1A = reader.ReadByte();
+			Unknown0x1B = reader.ReadByte();
 		}
 	}
 }

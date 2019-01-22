@@ -30,6 +30,27 @@ namespace DisgaeaMap.AnimParser
 
 			SpriteSets = new SpriteSet[NumSpriteSets];
 			for (int i = 0; i < SpriteSets.Length; i++) SpriteSets[i] = new SpriteSet(stream);
+
+
+			return;
+
+			// TEMP
+			var path = @"D:\Temp\Disgaea\Anim\";
+			for (int s = 0; s < SpriteSetIDs.Length; s++)
+			{
+				var dir = $"Set {SpriteSetIDs[s]:D5}";
+				Directory.CreateDirectory(Path.Combine(path, dir));
+
+				var bmps = SpriteSets[s].SpriteSheetBitmaps;
+				for (int b = 0; b < bmps.Length; b++)
+				{
+					for (int p = 0; p < bmps[b].Length; p++)
+					{
+						string file = $"Sheet {b:D2} Palette {p:D2}.png";
+						bmps[b][p].Save(Path.Combine(path, dir, file));
+					}
+				}
+			}
 		}
 	}
 }

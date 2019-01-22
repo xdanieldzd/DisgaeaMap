@@ -72,6 +72,7 @@
     <Compile Include="AnimParser\FrameIDMapping.cs" />
     <Compile Include="AnimParser\SpriteSet.cs" />
     <Compile Include="AnimParser\SpriteSheet.cs" />
+    <Compile Include="AnimParser\Unknown5.cs" />
     <Compile Include="AnimParser\Unknown3.cs" />
     <Compile Include="AnimParser\Unknown2.cs" />
     <Compile Include="MainForm.cs">
