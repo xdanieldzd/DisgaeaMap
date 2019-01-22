@@ -6,4 +6,4 @@ _The program is very messy, incomplete, has a lot of dummied out code, etc., etc
 
 Screenshots
 ===========
-![Screenshot 1](https://raw.githubusercontent.com/xdanieldzd/DisgaeaMap/b1a0db20680877b008a6913ea3aebdcad186519d/screenshots/screen1.png)
+![Screenshot 1](https://raw.githubusercontent.com/xdanieldzd/DisgaeaMap/02199c2b890abb5f53119b8c1b06426cee01f627/screenshots/screen1.png)
