@@ -20,6 +20,7 @@ using CobaltFont = Cobalt.Font;
 using DisgaeaMap.ModelParser;
 using DisgaeaMap.MpdParser;
 using DisgaeaMap.MiscParsers;
+using DisgaeaMap.AnimParser;
 
 namespace DisgaeaMap
 {
@@ -43,6 +44,9 @@ namespace DisgaeaMap
 
 		//string faceFilename;
 		//FaceBinary faceBinary;
+
+		string mainAnimFilename;
+		AnmBinary mainAnimBinary;
 
 		Camera camera;
 		Shader floorShader, objectShader, actorShader;
@@ -177,6 +181,8 @@ namespace DisgaeaMap
 				mpdBinary = LoadFile<MpdBinary>(mpdFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.mpd");
 
 				//faceBinary = LoadFile<FaceBinary>(faceFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\start.dat (Output)\face.dat");
+
+				mainAnimBinary = LoadFile<AnmBinary>(mainAnimFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\anm00.dat");
 			}
 #endif
 		}

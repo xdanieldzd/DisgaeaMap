@@ -7,7 +7,7 @@ using System.IO;
 
 using Cobalt.IO;
 
-namespace DisgaeaMap.ModelParser
+namespace DisgaeaMap
 {
 	public abstract class BaseChunk : ParsableData
 	{

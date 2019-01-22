@@ -67,6 +67,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnimParser\AnmBinary.cs" />
+    <Compile Include="AnimParser\Frame.cs" />
+    <Compile Include="AnimParser\FrameIDMapping.cs" />
+    <Compile Include="AnimParser\SpriteSet.cs" />
+    <Compile Include="AnimParser\SpriteSheet.cs" />
+    <Compile Include="AnimParser\Unknown3.cs" />
+    <Compile Include="AnimParser\Unknown2.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -80,7 +87,7 @@
       <DependentUpon>MapSelectForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MiscParsers\FaceBinary.cs" />
-    <Compile Include="ModelParser\BaseChunk.cs" />
+    <Compile Include="BaseChunk.cs" />
     <Compile Include="ModelParser\MeshChunk.cs" />
     <Compile Include="ModelParser\GeometryUnknownData2.cs" />
     <Compile Include="ModelParser\GeometryUnknownData3.cs" />
