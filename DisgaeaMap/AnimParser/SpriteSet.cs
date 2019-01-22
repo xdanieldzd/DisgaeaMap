@@ -34,7 +34,8 @@ namespace DisgaeaMap.AnimParser
 		public Unknown5[] Unknown5s { get; private set; }
 		public Frame[] Frames { get; private set; }
 
-		public Bitmap[][] SpriteSheetBitmaps { get; private set; }
+		byte[] rawPaletteData, rawPixelData;
+		Dictionary<SpriteSheet, Bitmap[]> spriteSheetBitmaps;
 
 		public SpriteSet(Stream stream, Endian endianness = Endian.LittleEndian) : base(stream, endianness) { }
 
@@ -83,28 +84,41 @@ namespace DisgaeaMap.AnimParser
 			Frames = new Frame[FramesCount];
 			for (int i = 0; i < Frames.Length; i++) Frames[i] = new Frame(stream);
 
-			/* Create bitmaps, etc. */
-			SpriteSheetBitmaps = new Bitmap[SpriteSheetCount][];
-			for (int i = 0; i < SpriteSheetBitmaps.Length; i++)
-			{
-				// TODO/HACK: get palette count via max palette number in framedata
-				var palCount = Frames.Max(x => x.PaletteIndex) + 1;
+			stream.Position = (startPosition + PaletteDataOffset);
+			rawPaletteData = reader.ReadBytes((int)(PixelDataOffset - PaletteDataOffset));
 
-				SpriteSheetBitmaps[i] = CreateSpriteSheetBitmaps(reader, startPosition, palCount, SpriteSheets[i]);
-			}
+			stream.Position = (startPosition + PixelDataOffset);
+			rawPixelData = reader.ReadBytes((int)(DataSize - 0x10 - PixelDataOffset));
+
+			spriteSheetBitmaps = new Dictionary<SpriteSheet, Bitmap[]>();
 
 			stream.Position = (startPosition + (DataSize - 0x10));
 		}
 
-		private Bitmap[] CreateSpriteSheetBitmaps(EndianBinaryReader reader, long startPosition, int paletteCount, SpriteSheet spriteSheet)
+		public Bitmap[] GetSpriteSheetBitmaps(int sheet)
 		{
-			reader.BaseStream.Position = (startPosition + PaletteDataOffset);
-			var paletteData = TextureHelper.GetPaletteData(reader, paletteCount, (1 << spriteSheet.Unknown0x08));
+			var spriteSheet = SpriteSheets[sheet];
+			if (!spriteSheetBitmaps.ContainsKey(spriteSheet))
+			{
+				byte[][] paletteData;
+				byte[] pixelData;
 
-			reader.BaseStream.Position = (startPosition + spriteSheet.PixelDataOffset);
-			var pixelData = TextureHelper.GetPixelData(reader, spriteSheet.Width, spriteSheet.Height, (1 << spriteSheet.Unknown0x08));
+				// TODO/HACK: get palette count via max palette number in framedata
+				var paletteCount = Frames.Max(x => x.PaletteIndex) + 1;
 
-			return TextureHelper.GetBitmaps(spriteSheet.Width, spriteSheet.Height, paletteCount, (1 << spriteSheet.Unknown0x08), pixelData, paletteData); ;
+				using (var reader = new EndianBinaryReader(new MemoryStream(rawPaletteData)))
+				{
+					paletteData = TextureHelper.GetPaletteData(reader, paletteCount, (1 << spriteSheet.Unknown0x08));
+				}
+				using (var reader = new EndianBinaryReader(new MemoryStream(rawPixelData)))
+				{
+					reader.BaseStream.Position = (spriteSheet.PixelDataOffset - PixelDataOffset);
+					pixelData = TextureHelper.GetPixelData(reader, spriteSheet.Width, spriteSheet.Height, (1 << spriteSheet.Unknown0x08));
+				}
+				spriteSheetBitmaps[spriteSheet] = TextureHelper.GetBitmaps(spriteSheet.Width, spriteSheet.Height, paletteCount, (1 << spriteSheet.Unknown0x08), pixelData, paletteData);
+			}
+
+			return spriteSheetBitmaps[spriteSheet];
 		}
 	}
 }

@@ -43,68 +43,30 @@ namespace DisgaeaMap.AnimParser
 					var dir = $"Set {SpriteSetIDs[s]:D5}\\Sheets";
 					Directory.CreateDirectory(Path.Combine(path, dir));
 
-					var bmps = SpriteSets[s].SpriteSheetBitmaps;
-					for (int b = 0; b < bmps.Length; b++)
+					for (int b = 0; b < SpriteSets[s].SpriteSheetCount; b++)
 					{
-						for (int p = 0; p < bmps[b].Length; p++)
+						var bmps = SpriteSets[s].GetSpriteSheetBitmaps(b);
+						for (int p = 0; p < bmps.Length; p++)
 						{
 							string file = $"Sheet {b:D2} Palette {p:D2}.png";
-							bmps[b][p].Save(Path.Combine(path, dir, file));
+							bmps[p].Save(Path.Combine(path, dir, file));
 						}
 					}
-				}
-			}
-
-			if (false)
-			{
-				// TEMP dump female samurai's spritesheets + frames (id 01070)
-				var setId = (ushort)01070;
-				var path = @"D:\Temp\Disgaea\Anim\";
-
-				var dir = $@"Set {setId:D5}";
-
-				var set = GetSpriteSet(setId);
-				var frames = set.Frames;
-				var bmps = set.SpriteSheetBitmaps;
-
-				var subdir1 = "Sheets";
-				Directory.CreateDirectory(Path.Combine(path, dir, subdir1));
-
-				for (int b = 0; b < bmps.Length; b++)
-				{
-					for (int p = 0; p < bmps[b].Length; p++)
-					{
-						string file = $"Sheet {b:D2} Palette {p:D2}.png";
-						bmps[b][p].Save(Path.Combine(path, dir, subdir1, file));
-					}
-				}
-
-				var subdir2 = "Frames";
-				Directory.CreateDirectory(Path.Combine(path, dir, subdir2));
-
-				for (int f = 0; f < frames.Length; f++)
-				{
-					var file = $"Frame {f:D2}.png";
-					if (f == 624 /*29*/)
-					{
-						bool tmp = false;
-					}
-					var bitmap = GetFrameBitmap(set, frames[f]);
-					bitmap.Save(Path.Combine(path, dir, subdir2, file));
 				}
 			}
 
 			if (true)
 			{
 				// TEMP dump stuff -- animations (tho they dont work right yet, herp derp!), spritesheets
+				var id = (ushort)0;
 
-				var id = (ushort)01070; // female samurai
-				id = 09101; //1st hit effect
-				id = 09201; //1st sword
-				id = 01000; //battle ui stuff
+				id = 09101; // 1st hit effect
+				id = 09201; // 1st sword
+				id = 01000; // battle ui stuff
+				id = 01070; // female samurai
 
-				TESTDumpAnims(id);
 				TESTDumpSheets(id);
+				TESTDumpAnims(id);
 			}
 		}
 
@@ -114,17 +76,17 @@ namespace DisgaeaMap.AnimParser
 			var dir = $"Set {setId:D5}";
 
 			var set = GetSpriteSet(setId);
-			var bmps = set.SpriteSheetBitmaps;
 
 			var subdir1 = "Sheets";
 			Directory.CreateDirectory(Path.Combine(path, dir, subdir1));
 
-			for (int b = 0; b < bmps.Length; b++)
+			for (int b = 0; b < set.SpriteSheetCount; b++)
 			{
-				for (int p = 0; p < bmps[b].Length; p++)
+				var bmps = set.GetSpriteSheetBitmaps(b);
+				for (int p = 0; p < bmps.Length; p++)
 				{
 					string file = $"Sheet {b:D2} Palette {p:D2}.png";
-					bmps[b][p].Save(Path.Combine(path, dir, subdir1, file));
+					bmps[p].Save(Path.Combine(path, dir, subdir1, file));
 				}
 			}
 		}
@@ -180,7 +142,7 @@ namespace DisgaeaMap.AnimParser
 
 		public Bitmap GetFrameBitmap(SpriteSet set, Frame frame)
 		{
-			var sheet = set.SpriteSheetBitmaps[frame.SpriteSheetIndex][frame.PaletteIndex];
+			var sheet = set.GetSpriteSheetBitmaps(frame.SpriteSheetIndex)[frame.PaletteIndex];
 
 			Bitmap bitmap;
 
