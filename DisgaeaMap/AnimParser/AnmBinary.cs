@@ -37,25 +37,11 @@ namespace DisgaeaMap.AnimParser
 			if (false)
 			{
 				// TEMP dump all spritesheets
-				var path = @"D:\Temp\Disgaea\Anim\";
-				for (int s = 0; s < SpriteSetIDs.Length; s++)
-				{
-					var dir = $"Set {SpriteSetIDs[s]:D5}\\Sheets";
-					Directory.CreateDirectory(Path.Combine(path, dir));
-
-					for (int b = 0; b < SpriteSets[s].SpriteSheetCount; b++)
-					{
-						var bmps = SpriteSets[s].GetSpriteSheetBitmaps(b);
-						for (int p = 0; p < bmps.Length; p++)
-						{
-							string file = $"Sheet {b:D2} Palette {p:D2}.png";
-							bmps[p].Save(Path.Combine(path, dir, file));
-						}
-					}
-				}
+				foreach (var s in SpriteSetIDs)
+					TESTDumpSheets(s);
 			}
 
-			if (false)
+			if (true)
 			{
 				// TEMP dump stuff -- animations (tho they dont work right yet, herp derp!), spritesheets
 				var id = (ushort)0;
@@ -76,6 +62,7 @@ namespace DisgaeaMap.AnimParser
 			var dir = $"Set {setId:D5}";
 
 			var set = GetSpriteSet(setId);
+			if (set == null) return;
 
 			var subdir1 = "Sheets";
 			Directory.CreateDirectory(Path.Combine(path, dir, subdir1));
@@ -132,8 +119,6 @@ namespace DisgaeaMap.AnimParser
 			for (int f = 0; f < set.Frames.Length; f++)
 			{
 				var frame = set.Frames[f];
-				if (frame.Unknown0x00 != 0) continue;   //ignore assumed external references
-
 				var file = $"Frame {f:D2}.png";
 				var bitmap = GetFrameBitmap(set, frame);
 				bitmap.Save(Path.Combine(path, dir, subdir2, file));
@@ -142,75 +127,94 @@ namespace DisgaeaMap.AnimParser
 
 		public SpriteSet GetSpriteSet(ushort setId)
 		{
-			var mainId = (ushort)((setId / 10) * 10);
-			var idx = Array.IndexOf(SpriteSetIDs, mainId);
+			int idx = idx = Array.IndexOf(SpriteSetIDs, setId);
+			if (idx == -1)
+			{
+				var mainId = (ushort)((setId / 10) * 10);
+				idx = Array.IndexOf(SpriteSetIDs, mainId);
+			}
 			return (idx != -1 ? SpriteSets[idx] : null);
 		}
 
 		public Bitmap GetFrameBitmap(SpriteSet set, Frame frame)
 		{
-			var sheet = set.GetSpriteSheetBitmaps(frame.SpriteSheetIndex)[frame.PaletteIndex];
+			var mainSheet = set.GetSpriteSheetBitmaps(frame.SpriteSheetIndex)[frame.PaletteIndex];
 
-			Bitmap bitmap;
-
-			if (true)
+			Bitmap subSheet = null;
+			if (frame.Unknown0x00 != 0)
 			{
-				// http://csharphelper.com/blog/2016/03/rotate-images-in-c/
-				var rotOrigin = new Matrix();
-				rotOrigin.Rotate(frame.RotationAngle);
-				var points = new Point[]
-				{
-						new Point(0, 0),
-						new Point(frame.SourceWidth, 0),
-						new Point(frame.SourceWidth, frame.SourceHeight),
-						new Point(0, frame.SourceHeight)
-				};
-				rotOrigin.TransformPoints(points);
-
-				int xmin = points[0].X;
-				int xmax = xmin;
-				int ymin = points[0].Y;
-				int ymax = ymin;
-				foreach (var point in points)
-				{
-					if (xmin > point.X) xmin = point.X;
-					if (xmax < point.X) xmax = point.X;
-					if (ymin > point.Y) ymin = point.Y;
-					if (ymax < point.Y) ymax = point.Y;
-				}
-
-				var scaleX = (frame.ScaleX / 100.0f);
-				var scaleY = (frame.ScaleY / 100.0f);
-				var rotated = new Bitmap(xmax - xmin, ymax - ymin);
-
-				var rotCenter = new Matrix();
-				rotCenter.RotateAt(frame.RotationAngle, new PointF(rotated.Width / 2, rotated.Height / 2));
-
-				using (var g = Graphics.FromImage(rotated))
-				{
-					g.Transform = rotCenter;
-					g.DrawImage(sheet, (rotated.Width - frame.SourceWidth) / 2, (rotated.Height - frame.SourceHeight) / 2, new Rectangle(frame.SourceX, frame.SourceY, frame.SourceWidth, frame.SourceHeight), GraphicsUnit.Pixel);
-				}
-
-				var scaled = new Bitmap((int)((xmax - xmin) * scaleX), (int)((ymax - ymin) * scaleY));
-				using (var g = Graphics.FromImage(scaled))
-				{
-					g.DrawImage(rotated, new Rectangle(0, 0, scaled.Width, scaled.Height));
-				}
-
-				bitmap = scaled;
-			}
-			else
-			{
-				bitmap = new Bitmap((int)(frame.SourceWidth * (frame.ScaleX / 100.0f)), (int)(frame.SourceHeight * (frame.ScaleY / 100.0f)));
-				using (var g = Graphics.FromImage(bitmap))
-				{
-					g.InterpolationMode = InterpolationMode.HighQualityBilinear;
-					g.DrawImage(sheet, new Rectangle(0, 0, bitmap.Width, bitmap.Height), new Rectangle(frame.SourceX, frame.SourceY, frame.SourceWidth, frame.SourceHeight), GraphicsUnit.Pixel);
-				}
+				var subSetId = (ushort)(9001 + (frame.Unknown0x00 * 100));
+				var subSet = GetSpriteSet(subSetId);
+				if (subSet != null)
+					subSheet = subSet.GetSpriteSheetBitmaps(0)[0];
 			}
 
-			return bitmap;
+			return GetFrameBitmap(mainSheet, subSheet, frame);
+		}
+
+		public Bitmap GetFrameBitmap(Bitmap mainSheet, Bitmap subSheet, Frame frame)
+		{
+			// http://csharphelper.com/blog/2016/03/rotate-images-in-c/
+			var rotOrigin = new Matrix();
+			rotOrigin.Rotate(frame.RotationAngle);
+			var points = new Point[]
+			{
+				new Point(0, 0),
+				new Point(frame.SourceWidth, 0),
+				new Point(frame.SourceWidth, frame.SourceHeight),
+				new Point(0, frame.SourceHeight)
+			};
+			rotOrigin.TransformPoints(points);
+
+			int xmin = points[0].X;
+			int xmax = xmin;
+			int ymin = points[0].Y;
+			int ymax = ymin;
+			foreach (var point in points)
+			{
+				if (xmin > point.X) xmin = point.X;
+				if (xmax < point.X) xmax = point.X;
+				if (ymin > point.Y) ymin = point.Y;
+				if (ymax < point.Y) ymax = point.Y;
+			}
+
+			var width = (xmax - xmin);
+			var height = (ymax - ymin);
+			var scaleX = (frame.ScaleX / 100.0f);
+			var scaleY = (frame.ScaleY / 100.0f);
+			var rotated = new Bitmap(width, height);
+
+			var rotCenter = new Matrix();
+			rotCenter.RotateAt(frame.RotationAngle, new PointF(rotated.Width / 2, rotated.Height / 2));
+
+			using (var g = Graphics.FromImage(rotated))
+			{
+				g.Transform = rotCenter;
+
+				var sheet = (frame.Unknown0x00 == 0 ? mainSheet : subSheet);
+				if (sheet != null)
+				{
+					int x = ((rotated.Width - frame.SourceWidth) / 2);
+					int y = ((rotated.Height - frame.SourceHeight) / 2);
+					g.DrawImage(sheet, x, y, new Rectangle(frame.SourceX, frame.SourceY, frame.SourceWidth, frame.SourceHeight), GraphicsUnit.Pixel);
+				}
+			}
+
+			var scaled = new Bitmap((int)(rotated.Width * scaleX), (int)(rotated.Height * scaleY));
+			using (var g = Graphics.FromImage(scaled))
+			{
+				g.DrawImage(rotated, new Rectangle(0, 0, scaled.Width, scaled.Height));
+			}
+
+			// TODO verify me
+			if ((frame.Unknown0x1B & 0x18) == 0x18)
+				scaled.RotateFlip(RotateFlipType.RotateNoneFlipXY);
+			else if ((frame.Unknown0x1B & 0x08) == 0x08)
+				scaled.RotateFlip(RotateFlipType.RotateNoneFlipX);
+			else if ((frame.Unknown0x1B & 0x10) == 0x10)
+				scaled.RotateFlip(RotateFlipType.RotateNoneFlipY);
+
+			return scaled;
 		}
 	}
 }

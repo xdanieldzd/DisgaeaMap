@@ -11,7 +11,7 @@ namespace DisgaeaMap.AnimParser
 {
 	public class Frame : ParsableData
 	{
-		public byte Unknown0x00 { get; private set; }       // spritesheet index to external file?? (ex. weapons in chara data)
+		public byte Unknown0x00 { get; private set; }       // index to asset 09x01, or something similar? verify me!
 		public byte Unknown0x01 { get; private set; }
 		public byte SpriteSheetIndex { get; private set; }
 		public byte PaletteIndex { get; private set; }
@@ -27,7 +27,7 @@ namespace DisgaeaMap.AnimParser
 		public short Unknown0x16 { get; private set; }
 		public ushort RotationAngle { get; private set; }
 		public byte Unknown0x1A { get; private set; }
-		public byte Unknown0x1B { get; private set; }
+		public byte Unknown0x1B { get; private set; }       // flags? (mirroring?) verify me!
 
 		public Frame(Stream stream, Endian endianness = Endian.LittleEndian) : base(stream, endianness) { }
 
