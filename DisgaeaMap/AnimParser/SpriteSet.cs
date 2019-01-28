@@ -12,6 +12,11 @@ namespace DisgaeaMap.AnimParser
 {
 	public class SpriteSet : BaseChunk
 	{
+		// 0x383320 - Female Samurai frame 0
+		// 0x387760 - Female Samurai frame 624 (battle cut-in)
+
+
+
 		/* Header; offsets relative to here (i.e. 0x10) */
 		public ushort Unknown1Count { get; private set; }
 		public ushort Unknown2Count { get; private set; }
@@ -44,7 +49,7 @@ namespace DisgaeaMap.AnimParser
 			base.ReadFromStream(stream, endianness);
 
 			long startPosition = stream.Position;
-			//if (startPosition == 0x5FBf0) { bool tmp = false; }
+			if (startPosition == 0x381630) { bool tmp = false; }
 
 			EndianBinaryReader reader = new EndianBinaryReader(stream, endianness);
 
@@ -116,6 +121,21 @@ namespace DisgaeaMap.AnimParser
 					pixelData = TextureHelper.GetPixelData(reader, spriteSheet.Width, spriteSheet.Height, (1 << spriteSheet.Unknown0x08));
 				}
 				spriteSheetBitmaps[spriteSheet] = TextureHelper.GetBitmaps(spriteSheet.Width, spriteSheet.Height, paletteCount, (1 << spriteSheet.Unknown0x08), pixelData, paletteData);
+				/*
+				foreach (var frame in Frames)
+				{
+					if (frame.SpriteSheetIndex == sheet && frame.Unknown0x00 == 0)
+					{
+						for (int i = 0; i < spriteSheetBitmaps[spriteSheet].Length; i++)
+						{
+							var sheetBitmap = spriteSheetBitmaps[spriteSheet][i];
+							using (var graphics = Graphics.FromImage(sheetBitmap))
+							{
+								graphics.DrawRectangle(Pens.Green, frame.SourceX, frame.SourceY, frame.SourceWidth - 1, frame.SourceHeight - 1);
+							}
+						}
+					}
+				}*/
 			}
 
 			return spriteSheetBitmaps[spriteSheet];

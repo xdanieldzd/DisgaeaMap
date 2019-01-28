@@ -11,7 +11,7 @@ namespace DisgaeaMap.AnimParser
 {
 	public class Frame : ParsableData
 	{
-		public byte Unknown0x00 { get; private set; }
+		public byte Unknown0x00 { get; private set; }       // spritesheet index to external file?? (ex. weapons in chara data)
 		public byte Unknown0x01 { get; private set; }
 		public byte SpriteSheetIndex { get; private set; }
 		public byte PaletteIndex { get; private set; }

@@ -131,8 +131,11 @@ namespace DisgaeaMap.AnimParser
 
 			for (int f = 0; f < set.Frames.Length; f++)
 			{
+				var frame = set.Frames[f];
+				if (frame.Unknown0x00 != 0) continue;   //ignore assumed external references
+
 				var file = $"Frame {f:D2}.png";
-				var bitmap = GetFrameBitmap(set, set.Frames[f]);
+				var bitmap = GetFrameBitmap(set, frame);
 				bitmap.Save(Path.Combine(path, dir, subdir2, file));
 			}
 		}
@@ -150,7 +153,7 @@ namespace DisgaeaMap.AnimParser
 
 			Bitmap bitmap;
 
-			if (false)
+			if (true)
 			{
 				// http://csharphelper.com/blog/2016/03/rotate-images-in-c/
 				var rotOrigin = new Matrix();
@@ -176,16 +179,26 @@ namespace DisgaeaMap.AnimParser
 					if (ymax < point.Y) ymax = point.Y;
 				}
 
-				bitmap = new Bitmap(xmax - xmin, ymax - ymin);
+				var scaleX = (frame.ScaleX / 100.0f);
+				var scaleY = (frame.ScaleY / 100.0f);
+				var rotated = new Bitmap(xmax - xmin, ymax - ymin);
 
 				var rotCenter = new Matrix();
-				rotCenter.RotateAt(frame.RotationAngle, new PointF(bitmap.Width / 2, bitmap.Height / 2));
+				rotCenter.RotateAt(frame.RotationAngle, new PointF(rotated.Width / 2, rotated.Height / 2));
 
-				using (var g = Graphics.FromImage(bitmap))
+				using (var g = Graphics.FromImage(rotated))
 				{
 					g.Transform = rotCenter;
-					g.DrawImage(sheet, (bitmap.Width - frame.SourceWidth) / 2, (bitmap.Height - frame.SourceHeight) / 2, new Rectangle(frame.SourceX, frame.SourceY, frame.SourceWidth, frame.SourceHeight), GraphicsUnit.Pixel);
+					g.DrawImage(sheet, (rotated.Width - frame.SourceWidth) / 2, (rotated.Height - frame.SourceHeight) / 2, new Rectangle(frame.SourceX, frame.SourceY, frame.SourceWidth, frame.SourceHeight), GraphicsUnit.Pixel);
 				}
+
+				var scaled = new Bitmap((int)((xmax - xmin) * scaleX), (int)((ymax - ymin) * scaleY));
+				using (var g = Graphics.FromImage(scaled))
+				{
+					g.DrawImage(rotated, new Rectangle(0, 0, scaled.Width, scaled.Height));
+				}
+
+				bitmap = scaled;
 			}
 			else
 			{
