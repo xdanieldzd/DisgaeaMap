@@ -36,7 +36,6 @@ namespace DisgaeaMap.MpdParser
 		public List<List<(Mesh, Texture[], BlendMode[])>> TileMeshes { get; private set; }
 
 		public Actor[] Actors { get; private set; }
-		public Dictionary<Actor, Mesh> ActorMeshes { get; private set; }
 
 		public MpdBinary(Stream stream, Endian endianness = Endian.LittleEndian) : base(stream, endianness) { }
 
@@ -426,77 +425,6 @@ namespace DisgaeaMap.MpdParser
 
 					mesh.Render();
 				}
-			}
-		}
-
-		public void RenderActors(Cobalt.Shader shader, AnimParser.AnmBinary mainAnimBinary)
-		{
-			if (ActorMeshes == null)
-			{
-				ActorMeshes = new Dictionary<Actor, Mesh>();
-
-				foreach (var actor in Actors)
-				{
-					var mesh = new Mesh();
-					mesh.SetPrimitiveType(PrimitiveType.Quads);
-
-					var x = -(actor.X * 12.0f);
-					var y = 0.0f;
-					var z = (actor.Z * 12.0f);
-
-					foreach (var chunk in Chunks)
-					{
-						foreach (var tile in Tiles[chunk])
-						{
-							var tx = (((chunk.MapOffsetX - 6.0f) / 12.0f) + tile.XCoordinate);
-							var tz = (((chunk.MapOffsetZ - 6.0f) / 12.0f) + tile.ZCoordinate);
-
-							if (tx == actor.X && tz == actor.Z)
-							{
-								y = -((tile.TopVertexNE + tile.TopVertexNW + tile.TopVertexSE + tile.TopVertexSW) / 4) + 0.1f;
-								break;
-							}
-						}
-					}
-
-					var color = (y == 0.0f ? Color4.Red : Color4.White);
-
-					var spriteSet = mainAnimBinary.GetAnimSet(actor.ID);
-					if (spriteSet != null)
-					{
-						if ((actor.ID % 10) != 0)
-						{
-							// TODO: higher tier charas, different palettes
-							color = Color4.LightBlue;
-						}
-
-						var bitmap = mainAnimBinary.GetSpriteBitmap(spriteSet, spriteSet.Sprites[1]);
-						mesh.SetMaterial(new Material(new Texture(bitmap)));
-					}
-					else
-					{
-						mesh.SetMaterial(new Material(new Texture(new Bitmap(@"Assets\\EmptyTexture.png"))));
-						color = Color4.Orange;
-					}
-
-					var vertices = new MpdActorVertex[]
-					{
-						new MpdActorVertex() { Position = new Vector4(-0.5f, 0.0f, 0.0f, 1.0f), TexCoord = new Vector2(0.0f, 1.0f), Color = color, Offset = new Vector3(x, y, z) },
-						new MpdActorVertex() { Position = new Vector4( 0.5f, 0.0f, 0.0f, 1.0f), TexCoord = new Vector2(1.0f, 1.0f), Color = color, Offset = new Vector3(x, y, z) },
-						new MpdActorVertex() { Position = new Vector4( 0.5f, 1.0f, 0.0f, 1.0f), TexCoord = new Vector2(1.0f, 0.0f), Color = color, Offset = new Vector3(x, y, z) },
-						new MpdActorVertex() { Position = new Vector4(-0.5f, 1.0f, 0.0f, 1.0f), TexCoord = new Vector2(0.0f, 0.0f), Color = color, Offset = new Vector3(x, y, z) },
-					};
-					mesh.SetVertexData(vertices);
-
-					ActorMeshes.Add(actor, mesh);
-				}
-			}
-
-			foreach (var actorMesh in ActorMeshes)
-			{
-				var texture = actorMesh.Value.GetMaterial().Texture;
-				shader.SetUniform("sprite_size", new Vector2(texture.Width / 32.0f, texture.Height / 32.0f));
-				actorMesh.Value.Render();
 			}
 		}
 	}

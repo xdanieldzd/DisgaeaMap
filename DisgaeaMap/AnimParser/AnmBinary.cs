@@ -51,7 +51,7 @@ namespace DisgaeaMap.AnimParser
 				id = 01000; // battle ui stuff
 				id = 01070; // female samurai
 
-				TESTDumpSheets(id);
+				//TESTDumpSheets(id);
 				TESTDumpAnims(id);
 			}
 		}
@@ -156,7 +156,7 @@ namespace DisgaeaMap.AnimParser
 		{
 			// http://csharphelper.com/blog/2016/03/rotate-images-in-c/
 			var rotOrigin = new Matrix();
-			rotOrigin.Rotate(sprite.RotationAngle);
+			//rotOrigin.Rotate(sprite.RotationAngle);
 			var points = new Point[]
 			{
 				new Point(0, 0),
@@ -185,7 +185,7 @@ namespace DisgaeaMap.AnimParser
 			var rotated = new Bitmap(width, height);
 
 			var rotCenter = new Matrix();
-			rotCenter.RotateAt(sprite.RotationAngle, new PointF(rotated.Width / 2, rotated.Height / 2));
+			//rotCenter.RotateAt(sprite.RotationAngle, new PointF(rotated.Width / 2, rotated.Height / 2));
 
 			using (var g = Graphics.FromImage(rotated))
 			{
@@ -207,13 +207,13 @@ namespace DisgaeaMap.AnimParser
 			}
 
 			// TODO verify me
-			if ((sprite.Unknown0x1B & 0x18) == 0x18)
+			/*if ((sprite.Unknown0x1B & 0x18) == 0x18)
 				scaled.RotateFlip(RotateFlipType.RotateNoneFlipXY);
 			else if ((sprite.Unknown0x1B & 0x08) == 0x08)
 				scaled.RotateFlip(RotateFlipType.RotateNoneFlipX);
 			else if ((sprite.Unknown0x1B & 0x10) == 0x10)
 				scaled.RotateFlip(RotateFlipType.RotateNoneFlipY);
-
+				*/
 			return scaled;
 		}
 	}

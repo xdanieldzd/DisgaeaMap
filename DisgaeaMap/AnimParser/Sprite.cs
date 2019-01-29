@@ -15,8 +15,8 @@ namespace DisgaeaMap.AnimParser
 		public byte Unknown0x01 { get; private set; }
 		public byte SpriteSheetIndex { get; private set; }
 		public byte PaletteIndex { get; private set; }
-		public short Unknown0x04 { get; private set; }      // usually negative?
-		public short Unknown0x06 { get; private set; }      // usually negative?
+		public short RotationCenterX { get; private set; }  // something like that, I guess?
+		public short RotationCenterY { get; private set; }  // ""
 		public ushort SourceX { get; private set; }
 		public ushort SourceY { get; private set; }
 		public ushort SourceWidth { get; private set; }
@@ -39,8 +39,8 @@ namespace DisgaeaMap.AnimParser
 			Unknown0x01 = reader.ReadByte();
 			SpriteSheetIndex = reader.ReadByte();
 			PaletteIndex = reader.ReadByte();
-			Unknown0x04 = reader.ReadInt16();
-			Unknown0x06 = reader.ReadInt16();
+			RotationCenterX = reader.ReadInt16();
+			RotationCenterY = reader.ReadInt16();
 			SourceX = reader.ReadUInt16();
 			SourceY = reader.ReadUInt16();
 			SourceWidth = reader.ReadUInt16();

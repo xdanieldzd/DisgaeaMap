@@ -14,5 +14,6 @@ void main(void)
     vec2 sheet_coord = vec2((sprite_rect.x + (sprite_rect.z * texCoord.x)) / sheet_size.x,
                             (sprite_rect.y + (sprite_rect.w * texCoord.y)) / sheet_size.y);
     vec4 result = texture2D(texture, sheet_coord);
+    if (result.a < 0.15) discard;
     out_frag_color = result;
 }
