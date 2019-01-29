@@ -48,8 +48,12 @@ namespace DisgaeaMap
 		string mainAnimFilename;
 		AnmBinary mainAnimBinary;
 
+		ushort TEMPsetId;
+		int TEMPanimIdx, TEMPanimIdxMax;
+		Renderer TEMPanimRenderer;
+
 		Camera camera;
-		Shader floorShader, objectShader, actorShader;
+		Shader floorShader, objectShader, actorShader, TESTanimShader;
 		CobaltFont font;
 		Texture emptyTexture;
 
@@ -121,6 +125,7 @@ namespace DisgaeaMap
 			floorShader = new Shader(System.IO.File.ReadAllText(@"Assets\\FloorVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\FloorFragmentShader.glsl"));
 			objectShader = new Shader(System.IO.File.ReadAllText(@"Assets\\ObjectVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\ObjectFragmentShader.glsl"));
 			actorShader = new Shader(System.IO.File.ReadAllText(@"Assets\\ActorVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\ActorFragmentShader.glsl"));
+			TESTanimShader = new Shader(System.IO.File.ReadAllText(@"Assets\\TESTAnimVertexShader.glsl"), System.IO.File.ReadAllText(@"Assets\\TESTAnimFragmentShader.glsl"));
 
 			try
 			{
@@ -148,6 +153,8 @@ namespace DisgaeaMap
 			objectShader?.SetUniform("texture", 0);
 
 			actorShader?.SetUniform("texture", 0);
+
+			TESTanimShader?.SetUniform("texture", 0);
 
 			GL.Enable(EnableCap.Blend);
 			GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
@@ -183,6 +190,11 @@ namespace DisgaeaMap
 				//faceBinary = LoadFile<FaceBinary>(faceFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\start.dat (Output)\face.dat");
 
 				mainAnimBinary = LoadFile<AnmBinary>(mainAnimFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\anm00.dat");
+
+				TEMPsetId = 01070; // female samurai
+				TEMPanimIdx = 0;
+				TEMPanimIdxMax = mainAnimBinary.GetAnimSet(TEMPsetId).AnimIdentifiers.Length;
+				TEMPanimRenderer = new Renderer(mainAnimBinary, TESTanimShader, modelviewMatrixName);
 			}
 #endif
 		}
@@ -216,6 +228,18 @@ namespace DisgaeaMap
 					if (kbdState[OpenTK.Input.Key.F12] && !lastKbd[OpenTK.Input.Key.F12])
 						busy = takeShot = true;
 
+					if (kbdState[OpenTK.Input.Key.KeypadPlus] && !lastKbd[OpenTK.Input.Key.KeypadPlus])
+					{
+						TEMPanimIdx++;
+						if (TEMPanimIdx >= TEMPanimIdxMax) TEMPanimIdx = 0;
+					}
+
+					if (kbdState[OpenTK.Input.Key.KeypadMinus] && !lastKbd[OpenTK.Input.Key.KeypadMinus])
+					{
+						TEMPanimIdx--;
+						if (TEMPanimIdx < 0) TEMPanimIdx = (TEMPanimIdxMax - 1);
+					}
+
 					lastKbd = kbdState;
 
 					if (renderControl.ClientRectangle.Contains(renderControl.PointToClient(Cursor.Position)) &&
@@ -226,6 +250,26 @@ namespace DisgaeaMap
 
 			emptyTexture?.Activate();
 
+			RenderAnimTEST(TEMPsetId, TEMPanimIdx);
+
+			//RenderScene();
+			//ProcessScreenshot();
+			RenderHUD();
+		}
+
+		private void RenderAnimTEST(ushort setId, int animIdx)
+		{
+			TESTanimShader?.Activate();
+			//TESTanimShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreateOrthographicOffCenter(0.0f, renderControl.ClientRectangle.Width, 0.0f, renderControl.ClientRectangle.Height, 0.1f, 15000.0f));
+			TESTanimShader?.SetUniformMatrix(modelviewMatrixName, false, /*modelviewMatrix * */camera.GetViewMatrix());
+
+			TEMPanimRenderer?.Render(setId, animIdx);
+
+			renderControl_Resize(renderControl, EventArgs.Empty);
+		}
+
+		private void RenderScene()
+		{
 			Matrix4 tempMatrix = Matrix4.Identity;
 			if (true)
 			{
@@ -298,7 +342,10 @@ namespace DisgaeaMap
 				GL.DepthMask(true);
 				mpdBinary?.RenderActors(actorShader, mainAnimBinary);
 			}
+		}
 
+		private void ProcessScreenshot()
+		{
 			if (takeShot)
 			{
 				using (Bitmap screenshot = renderControl.GrabScreenshot())
@@ -319,7 +366,10 @@ namespace DisgaeaMap
 				busy = false;
 				takeShot = false;
 			}
+		}
 
+		private void RenderHUD()
+		{
 			if (font != null && textOverlay && !takeShot)
 			{
 				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
@@ -334,6 +384,12 @@ namespace DisgaeaMap
 				builder.AppendLine();
 				builder.Append($"F11: Show HUD ({textOverlay})\n");
 				builder.Append($"F12: Screenshot");
+
+				builder.AppendLine();
+				builder.AppendLine();
+				builder.AppendLine();
+				builder.AppendLine($"TESTING! {TEMPanimIdx + 1}/{TEMPanimIdxMax} -- numpad +/-");
+
 				font.DrawString(8.0f, 8.0f, builder.ToString());
 			}
 		}
@@ -350,6 +406,7 @@ namespace DisgaeaMap
 			objectShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
 			floorShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
 			actorShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
+			TESTanimShader?.SetUniformMatrix(projectionMatrixName, false, Matrix4.CreatePerspectiveFieldOfView(fovy, aspectRatio, 0.1f, 15000.0f));
 
 			if (font != null)
 				font.SetScreenSize(renderControl.ClientRectangle.Width, renderControl.ClientRectangle.Height);

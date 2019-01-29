@@ -9,6 +9,7 @@ using Cobalt.IO;
 
 namespace DisgaeaMap.AnimParser
 {
+	[System.Diagnostics.DebuggerDisplay("{DebuggerDisplay,nq}")]
 	public class Unknown3 : ParsableData
 	{
 		public ushort Unknown0x00 { get; private set; }
@@ -23,5 +24,7 @@ namespace DisgaeaMap.AnimParser
 			Unknown0x00 = reader.ReadUInt16();
 			Unknown0x02 = reader.ReadUInt16();
 		}
+
+		private string DebuggerDisplay { get { return $"Unknown0 = {Unknown0x00}, Unknown2 = {Unknown0x02}"; } }
 	}
 }

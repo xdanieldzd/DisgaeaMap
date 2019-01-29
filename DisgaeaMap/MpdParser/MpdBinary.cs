@@ -461,7 +461,7 @@ namespace DisgaeaMap.MpdParser
 
 					var color = (y == 0.0f ? Color4.Red : Color4.White);
 
-					var spriteSet = mainAnimBinary.GetSpriteSet(actor.ID);
+					var spriteSet = mainAnimBinary.GetAnimSet(actor.ID);
 					if (spriteSet != null)
 					{
 						if ((actor.ID % 10) != 0)
@@ -470,7 +470,7 @@ namespace DisgaeaMap.MpdParser
 							color = Color4.LightBlue;
 						}
 
-						var bitmap = mainAnimBinary.GetFrameBitmap(spriteSet, spriteSet.Frames[1]);
+						var bitmap = mainAnimBinary.GetSpriteBitmap(spriteSet, spriteSet.Sprites[1]);
 						mesh.SetMaterial(new Material(new Texture(bitmap)));
 					}
 					else
