@@ -58,7 +58,9 @@ namespace DisgaeaMap.AnimParser
 		public void Render(Matrix4 modelviewMatrix, ushort setId, int animIdx)
 		{
 			if (shader == null) return;
+
 			shader.Activate();
+			shader.SetUniformMatrix(modelviewMatrixName, false, modelviewMatrix);
 
 			var renderKey = (setId, animIdx);
 			if (!renderDict.ContainsKey(renderKey))
@@ -118,7 +120,7 @@ namespace DisgaeaMap.AnimParser
 				currentFrameIdx = (renderDict[renderKey].currentFrameIdx + 1) % frameData.Length;
 				renderDict[renderKey] = (
 					currentFrameIdx,
-					(frameData[currentFrameIdx].MaybeDuration / ((20.0 * 255.0) / 60.0)),  // TODO err not correct, pretty sure
+					(frameData[currentFrameIdx].MaybeDuration / ((15.0 * 255.0) / 60.0)),  // TODO err not correct, pretty sure
 					DateTime.Now);
 			}
 
@@ -137,16 +139,15 @@ namespace DisgaeaMap.AnimParser
 				var spriteMatrix = Matrix4.Identity;
 
 				// TODO: very busted, need more research
-				//spriteMatrix *= Matrix4.CreateScale(currentSprite.ScaleX / 100.0f, currentSprite.ScaleY / 100.0f, 1.0f);
+				//  also probably messed up wrt the shader & how billboarding is setup
 
-				//spriteMatrix *= Matrix4.CreateTranslation(currentSprite.RotationCenterX, currentSprite.RotationCenterY, 0.0f);
-				//spriteMatrix *= Matrix4.CreateRotationZ(-MathHelper.DegreesToRadians(currentSprite.RotationAngle));
 				//spriteMatrix *= Matrix4.CreateTranslation(-currentSprite.RotationCenterX, -currentSprite.RotationCenterY, 0.0f);
-
+				//spriteMatrix *= Matrix4.CreateScale(currentSprite.ScaleX / 100.0f, currentSprite.ScaleY / 100.0f, 1.0f);
+				//spriteMatrix *= Matrix4.CreateRotationZ(-MathHelper.DegreesToRadians(currentSprite.RotationAngle));
 				//spriteMatrix *= Matrix4.CreateTranslation(currentSprite.Unknown0x14, currentSprite.Unknown0x16, 0.0f);
+				//spriteMatrix *= Matrix4.CreateTranslation(currentSprite.RotationCenterX, currentSprite.RotationCenterY, 0.0f);
 
 				spriteMatrix *= Matrix4.CreateTranslation(0.0f, 0.0f, z);
-				spriteMatrix *= modelviewMatrix;
 
 				var spriteKey = (setId, currentSprite.SpriteSheetIndex, currentSprite.PaletteIndex, currentSprite.Unknown0x00);
 				if (spriteSheetTextureDict.ContainsKey(spriteKey))
@@ -154,10 +155,9 @@ namespace DisgaeaMap.AnimParser
 					var currentTexture = spriteSheetTextureDict[spriteKey];
 					currentTexture.Activate();
 
-					shader.SetUniformMatrix(modelviewMatrixName, false, spriteMatrix);
+					shader.SetUniformMatrix("sprite_matrix", false, spriteMatrix);
 					shader.SetUniform("sprite_rect", new Vector4(currentSprite.SourceX, currentSprite.SourceY, currentSprite.SourceWidth, currentSprite.SourceHeight));
 					shader.SetUniform("sheet_size", new Vector2(currentTexture.Width, currentTexture.Height));
-
 					spriteMesh.Render();
 				}
 			}

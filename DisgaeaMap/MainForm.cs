@@ -48,6 +48,7 @@ namespace DisgaeaMap
 		string mainAnimFilename;
 		AnmBinary mainAnimBinary;
 		Renderer mainAnimRenderer;
+		Dictionary<Actor, Vector3> actorCache;
 
 		bool animTestMode;
 		ushort animTestSetId;
@@ -145,6 +146,10 @@ namespace DisgaeaMap
 
 			mapFilename = string.Empty;
 			mpdFilename = string.Empty;
+			mainAnimFilename = string.Empty;
+
+			actorCache = new Dictionary<Actor, Vector3>();
+
 			busy = takeShot = false;
 
 			floorShader?.SetUniform("texture0", 0);
@@ -180,6 +185,7 @@ namespace DisgaeaMap
 
 				file = "mp00204";       //magnificent gate
 				file = "mp00101";       //tutorial basics1
+				file = "mp01604";       //absolute zero
 				file = "mp00104";       //practice map
 
 				mapBinary = LoadFile<MapBinary>(mapFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.dat");
@@ -349,31 +355,45 @@ namespace DisgaeaMap
 			{
 				foreach (var actor in mpdBinary.Actors)
 				{
-					var x = -(actor.X * 12.0f);
-					var y = 0.0f;
-					var z = (actor.Z * 12.0f);
-
-					foreach (var chunk in mpdBinary.Chunks)
+					if (!actorCache.ContainsKey(actor))
 					{
-						foreach (var tile in mpdBinary.Tiles[chunk])
-						{
-							var tx = (((chunk.MapOffsetX - 6.0f) / 12.0f) + tile.XCoordinate);
-							var tz = (((chunk.MapOffsetZ - 6.0f) / 12.0f) + tile.ZCoordinate);
+						var x = -(actor.X * 12.0f);
+						var y = 0.0f;
+						var z = (actor.Z * 12.0f);
 
-							if (tx == actor.X && tz == actor.Z)
+						foreach (var chunk in mpdBinary.Chunks)
+						{
+							foreach (var tile in mpdBinary.Tiles[chunk])
 							{
-								y = -((tile.TopVertexNE + tile.TopVertexNW + tile.TopVertexSE + tile.TopVertexSW) / 4) + 0.1f;
-								break;
+								var tx = (((chunk.MapOffsetX - 6.0f) / 12.0f) + tile.XCoordinate);
+								var tz = (((chunk.MapOffsetZ - 6.0f) / 12.0f) + tile.ZCoordinate);
+
+								if (tx == actor.X && tz == actor.Z)
+								{
+									y = -((tile.TopVertexNE + tile.TopVertexNW + tile.TopVertexSE + tile.TopVertexSW) / 4) + 0.1f;
+									break;
+								}
 							}
 						}
-					}
 
-					var spriteSet = mainAnimBinary.GetAnimSet(actor.ID);
-					if (spriteSet != null)
-					{
-						animShader.SetUniform("grid_position", new Vector3(x, y, z));
-						mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1);
+						actorCache.Add(actor, new Vector3(x, y, z));
 					}
+				}
+
+				GL.DepthMask(false);
+				foreach (var actor in mpdBinary.Actors)
+				{
+					var position = actorCache[actor];
+					animShader.SetUniform("grid_position", position);
+					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1);
+				}
+
+				GL.DepthMask(true);
+				foreach (var actor in mpdBinary.Actors)
+				{
+					var position = actorCache[actor];
+					animShader.SetUniform("grid_position", position);
+					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1);
 				}
 			}
 		}
