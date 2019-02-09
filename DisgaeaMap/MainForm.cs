@@ -181,12 +181,13 @@ namespace DisgaeaMap
 				file = "mp00606";       //heart of evil
 				file = "mp00603";       //witches den
 				file = "mp01302";       //hall of justice
-				file = "mp05104";       //dark castle/shop-gate-area
 
 				file = "mp00204";       //magnificent gate
 				file = "mp00101";       //tutorial basics1
 				file = "mp01604";       //absolute zero
 				file = "mp00104";       //practice map
+
+				file = "mp05104";       //dark castle/shop-gate-area
 
 				mapBinary = LoadFile<MapBinary>(mapFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.dat");
 				mpdBinary = LoadFile<MpdBinary>(mpdFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.mpd");
@@ -322,10 +323,7 @@ namespace DisgaeaMap
 				objectShader.Activate();
 				objectShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
 
-				//mpdBinary.RenderObjects(mapBinary.MeshSets, objectShader);
-
-				//objectShader.SetUniformMatrix("local_matrix", false, Matrix4.Identity);
-				//mapBinary?.RenderAssets();
+				mpdBinary.RenderObjects(mapBinary.MeshSets, objectShader);
 			}
 
 			if (floorShader != null)

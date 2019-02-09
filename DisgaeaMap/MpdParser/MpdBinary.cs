@@ -224,7 +224,7 @@ namespace DisgaeaMap.MpdParser
 			return coord;
 		}
 
-		public void RenderObjects((Mesh, Texture)[][] meshes, Cobalt.Shader shader)
+		public void RenderObjects((Mesh, Texture, TransformData)[][] meshes, Cobalt.Shader shader)
 		{
 			var chunk = Chunks[0];
 			//foreach (var chunk in Chunks)
@@ -233,25 +233,32 @@ namespace DisgaeaMap.MpdParser
 				//foreach (var obj in chunk.Objects.Take(2))
 				//foreach (var obj in chunk.Objects.Skip(14).Take(3))
 				//foreach (var obj in new Object[] { chunk.Objects[0], chunk.Objects[1], chunk.Objects[13], chunk.Objects[20] })
+				//foreach (var obj in new Object[] { chunk.Objects[18] })
 				foreach (var obj in chunk.Objects)
 				{
-					if (obj.ObjectType < meshes.Length)
+					// TODO objecttype isn't ~really~ in index into meshes? map05104, obj 18 == two swords sticking in countertop; currently renders as one sword lying on the counter
+
+					var objValid = (obj.Transforms.XScale != 0 && obj.Transforms.YScale != 0 && obj.Transforms.ZScale != 0);
+					if (objValid && obj.ObjectType < meshes.Length)
 					{
-						var x = ((((chunk.MapOffsetX - 6) / 12) * 12.0f) + obj.Transforms.XPosition);
+						var x = -((((chunk.MapOffsetX - 6) / 12) * 12.0f) + obj.Transforms.XPosition);
 						var y = (float)-obj.Transforms.YPosition;
 						var z = ((((chunk.MapOffsetZ - 6) / 12) * 12.0f) + obj.Transforms.ZPosition);
 
-						var scaleMatrix = Matrix4.CreateScale(obj.Transforms.XScale / 100.0f, obj.Transforms.YScale / 100.0f, obj.Transforms.ZScale / 100.0f);
-						var rotationZMatrix = Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(obj.Transforms.ZRotation));
-						var rotationYMatrix = Matrix4.CreateRotationY(-MathHelper.DegreesToRadians(obj.Transforms.YRotation));
-						var rotationXMatrix = Matrix4.CreateRotationX(MathHelper.DegreesToRadians(obj.Transforms.XRotation));
-						var translationMatrix = Matrix4.CreateTranslation(x, y, z);
-						var finalMatrix = scaleMatrix * rotationZMatrix * rotationYMatrix * rotationXMatrix * translationMatrix;
-
-						shader.SetUniformMatrix("local_matrix", false, finalMatrix);
-
-						foreach (var (objMesh, objTexture) in meshes[obj.ObjectType])
+						foreach (var (objMesh, objTexture, chunkTransforms) in meshes[obj.ObjectType])
 						{
+							var objectMatrix = Matrix4.Identity;
+
+							objectMatrix *= Matrix4.CreateScale(chunkTransforms.XScale / 100.0f, chunkTransforms.YScale / 100.0f, chunkTransforms.ZScale / 100.0f);
+							objectMatrix *= Matrix4.CreateScale(obj.Transforms.XScale / 100.0f, obj.Transforms.YScale / 100.0f, obj.Transforms.ZScale / 100.0f);
+
+							objectMatrix *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(chunkTransforms.ZRotation + obj.Transforms.ZRotation));
+							objectMatrix *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(-90.0f + (-chunkTransforms.YRotation + -obj.Transforms.YRotation)));
+							objectMatrix *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(chunkTransforms.XRotation + obj.Transforms.XRotation));
+							objectMatrix *= Matrix4.CreateTranslation(-(chunkTransforms.XPosition / 10.0f) + x, -(chunkTransforms.YPosition / 10.0f) + y, (chunkTransforms.ZPosition / 10.0f) + z);
+
+							shader.SetUniformMatrix("local_matrix", false, objectMatrix);
+
 							objTexture.Activate();
 							objMesh.Render();
 						}
