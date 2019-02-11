@@ -188,6 +188,7 @@ namespace DisgaeaMap
 				file = "mp01604";       //absolute zero
 				file = "mp00104";       //practice map
 
+				file = "mp05102";       //dark castle/laharl
 				file = "mp05104";       //dark castle/shop-gate-area
 
 				mapBinary = LoadFile<MapBinary>(mapFilename = $@"D:\Games\PlayStation 2\Disgaea Misc\Output\{file}.dat");
@@ -198,7 +199,7 @@ namespace DisgaeaMap
 				mainAnimBinary = LoadFile<AnmBinary>(mainAnimFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\anm00.dat");
 				mainAnimRenderer = new Renderer(mainAnimBinary, animShader, modelviewMatrixName);
 
-				animTestMode = true;
+				animTestMode = false;
 
 				animTestSetId = 00001; // laharl
 				animTestSetId = 00002; // etna
@@ -351,14 +352,6 @@ namespace DisgaeaMap
 				tempMatrix *= Matrix4.CreateScale(1.0f, -1.0f, -1.0f);
 			}
 
-			if (objectShader != null)
-			{
-				objectShader.Activate();
-				objectShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
-
-				mpdBinary.RenderObjects(mapBinary.MeshSets, objectShader);
-			}
-
 			if (floorShader != null)
 			{
 				floorShader.Activate();
@@ -380,6 +373,17 @@ namespace DisgaeaMap
 					GL.Disable(EnableCap.PolygonOffsetLine);
 					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
 				}
+			}
+
+			if (objectShader != null)
+			{
+				objectShader.Activate();
+				objectShader.SetUniformMatrix(modelviewMatrixName, false, tempMatrix);
+
+				GL.DepthMask(false);
+				mpdBinary.RenderObjects(mapBinary.MeshSets, objectShader);
+				GL.DepthMask(true);
+				mpdBinary.RenderObjects(mapBinary.MeshSets, objectShader);
 			}
 
 			if (animShader != null)

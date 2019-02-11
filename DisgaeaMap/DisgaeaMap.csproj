@@ -91,11 +91,12 @@
     <Compile Include="MiscParsers\FaceBinary.cs" />
     <Compile Include="BaseChunk.cs" />
     <Compile Include="ModelParser\MeshChunk.cs" />
-    <Compile Include="ModelParser\GeometryUnknownData2.cs" />
-    <Compile Include="ModelParser\GeometryUnknownData3.cs" />
+    <Compile Include="ModelParser\MeshData.cs" />
+    <Compile Include="ModelParser\Geometry.cs" />
     <Compile Include="ModelParser\MapBinary.cs" />
     <Compile Include="ModelParser\FloorTextureChunk.cs" />
     <Compile Include="ModelParser\ObjectTextureData.cs" />
+    <Compile Include="ModelParser\UnknownData1.cs" />
     <Compile Include="MpdParser\Actor.cs" />
     <Compile Include="MpdParser\Chunk.cs" />
     <Compile Include="TransformData.cs" />

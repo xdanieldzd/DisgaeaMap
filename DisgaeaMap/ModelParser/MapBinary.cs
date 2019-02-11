@@ -21,7 +21,7 @@ namespace DisgaeaMap.ModelParser
 		// TODO: a lot i guess
 
 		public uint NumFloorTextures { get; private set; }
-		public uint NumGeometry { get; private set; }
+		public uint NumMeshChunks { get; private set; }
 		public uint NumUnknown0x08 { get; private set; }
 		public uint NumUnknown0x0C { get; private set; }    //same as 0x04?
 		public string[] FloorTextureNames { get; private set; }
@@ -31,7 +31,7 @@ namespace DisgaeaMap.ModelParser
 		public byte[][] UnknownData1 { get; private set; }
 
 		public Texture[] FloorTextures { get; private set; }
-		public (Mesh, Texture, TransformData)[][] MeshSets { get; private set; }
+		public (Mesh, Texture, TransformData[])[][] MeshSets { get; private set; }
 
 		public MapBinary(Stream stream, Endian endianness = Endian.LittleEndian) : base(stream, endianness) { }
 
@@ -40,7 +40,7 @@ namespace DisgaeaMap.ModelParser
 			EndianBinaryReader reader = new EndianBinaryReader(stream, endianness);
 
 			NumFloorTextures = reader.ReadUInt32();
-			NumGeometry = reader.ReadUInt32();
+			NumMeshChunks = reader.ReadUInt32();
 			NumUnknown0x08 = reader.ReadUInt32();
 			NumUnknown0x0C = reader.ReadUInt32();
 			FloorTextureNames = new string[NumFloorTextures];
@@ -54,7 +54,7 @@ namespace DisgaeaMap.ModelParser
 				stream.Position = position + FloorTextureChunks[i].DataSize + 0x10;
 			}
 
-			MeshChunks = new MeshChunk[NumGeometry];
+			MeshChunks = new MeshChunk[NumMeshChunks];
 			for (int i = 0; i < MeshChunks.Length; i++)
 			{
 				var position = stream.Position;
@@ -64,7 +64,7 @@ namespace DisgaeaMap.ModelParser
 
 			UnknownData1 = new byte[NumUnknown0x0C][];
 			for (int i = 0; i < UnknownData1.Length; i++)
-				UnknownData1[1] = reader.ReadBytes(10);
+				UnknownData1[i] = reader.ReadBytes(10);
 
 			var dummyTexture = new Bitmap(32, 32, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
 			using (Graphics g = Graphics.FromImage(dummyTexture))
@@ -83,27 +83,26 @@ namespace DisgaeaMap.ModelParser
 
 		private void GenerateMeshes()
 		{
-			MeshSets = new (Mesh, Texture, TransformData)[MeshChunks.Length][];
+			MeshSets = new (Mesh, Texture, TransformData[])[MeshChunks.Length][];
 
 			for (int i = 0; i < MeshSets.Length; i++)
 			{
 				var chunk = MeshChunks[i];
-				var transforms = chunk.UnknownTransforms[0];
 
-				MeshSets[i] = new (Mesh, Texture, TransformData)[chunk.UnknownData2.NumUnknownData3];
+				MeshSets[i] = new (Mesh, Texture, TransformData[])[chunk.MeshData.NumGeometry];
 
 				var currentVertex = 0;
 				for (int j = 0; j < MeshSets[i].Length; j++)
 				{
 					var mesh = new Mesh();
-					var data = chunk.UnknownData2.UnknownData3[j];
+					var data = chunk.MeshData.Geometry[j];
 
 					var vertices = new List<CommonVertex>();
 					for (int k = 0; k < data.NumVertices; k += 3)
 					{
-						vertices.Add(new CommonVertex() { Position = chunk.UnknownData2.Vertices[currentVertex + 2], Normal = Vector3.Zero, Color = Color4.White, TexCoord = chunk.UnknownData2.VertexDataXXX[currentVertex + 2].Xy });
-						vertices.Add(new CommonVertex() { Position = chunk.UnknownData2.Vertices[currentVertex + 1], Normal = Vector3.Zero, Color = Color4.White, TexCoord = chunk.UnknownData2.VertexDataXXX[currentVertex + 1].Xy });
-						vertices.Add(new CommonVertex() { Position = chunk.UnknownData2.Vertices[currentVertex + 0], Normal = Vector3.Zero, Color = Color4.White, TexCoord = chunk.UnknownData2.VertexDataXXX[currentVertex + 0].Xy });
+						vertices.Add(new CommonVertex() { Position = chunk.MeshData.Vertices[currentVertex + 2], Normal = Vector3.Zero, Color = data.PrimitiveColor, TexCoord = chunk.MeshData.TexCoords[currentVertex + 2].Xy });
+						vertices.Add(new CommonVertex() { Position = chunk.MeshData.Vertices[currentVertex + 1], Normal = Vector3.Zero, Color = data.PrimitiveColor, TexCoord = chunk.MeshData.TexCoords[currentVertex + 1].Xy });
+						vertices.Add(new CommonVertex() { Position = chunk.MeshData.Vertices[currentVertex + 0], Normal = Vector3.Zero, Color = data.PrimitiveColor, TexCoord = chunk.MeshData.TexCoords[currentVertex + 0].Xy });
 						currentVertex += 3;
 					}
 
@@ -111,15 +110,15 @@ namespace DisgaeaMap.ModelParser
 					mesh.SetPrimitiveType(PrimitiveType.Triangles);
 
 					Bitmap textureImage;
-					var textureIdx = (data.MaybeSomeID - 1);
+					var textureIdx = (data.TextureID - 1);
 					if (textureIdx >= 0)
-						textureImage = chunk.UnknownData2.Textures[textureIdx].Bitmaps.FirstOrDefault();
+						textureImage = chunk.MeshData.Textures[textureIdx].Bitmaps.FirstOrDefault();
 					else
 						textureImage = new Bitmap(32, 32);
 
 					var texture = new Texture(textureImage, TextureWrapMode.Repeat, TextureWrapMode.Repeat, TextureMinFilter.Linear, TextureMagFilter.Linear);
 
-					MeshSets[i][j] = (mesh, texture, transforms);
+					MeshSets[i][j] = (mesh, texture, chunk.UnknownTransforms);
 				}
 			}
 		}

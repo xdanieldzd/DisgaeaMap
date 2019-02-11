@@ -88,9 +88,9 @@ namespace DisgaeaMap
 			return bitmaps;
 		}
 
-		private static byte ScaleAlpha(byte a)
+		public static byte ScaleComponent(byte value)
 		{
-			return (byte)Math.Min((255.0f * (a / 128.0f)), 0xFF);
+			return (byte)Math.Min((255.0f * (value / 128.0f)), 0xFF);
 		}
 
 		private static byte[] ReadPaletteData(EndianBinaryReader reader, PS2PixelFormat pixelFormat, PS2PixelFormat paletteFormat)
@@ -107,7 +107,7 @@ namespace DisgaeaMap
 					r = (byte)color;
 					g = (byte)(color >> 8);
 					b = (byte)(color >> 16);
-					a = ScaleAlpha((byte)(color >> 24));
+					a = ScaleComponent((byte)(color >> 24));
 				}
 				else
 				{
@@ -115,7 +115,7 @@ namespace DisgaeaMap
 					r = (byte)((color & 0x001F) << 3);
 					g = (byte)(((color & 0x03E0) >> 5) << 3);
 					b = (byte)(((color & 0x7C00) >> 10) << 3);
-					a = ScaleAlpha((byte)(i == 0 ? 0 : 0x80));
+					a = ScaleComponent((byte)(i == 0 ? 0 : 0x80));
 				}
 
 				tempPalette[i + 0] = a;

@@ -224,7 +224,7 @@ namespace DisgaeaMap.MpdParser
 			return coord;
 		}
 
-		public void RenderObjects((Mesh, Texture, TransformData)[][] meshes, Cobalt.Shader shader)
+		public void RenderObjects((Mesh, Texture, TransformData[])[][] meshes, Cobalt.Shader shader)
 		{
 			var chunk = Chunks[0];
 			//foreach (var chunk in Chunks)
@@ -238,16 +238,21 @@ namespace DisgaeaMap.MpdParser
 				{
 					// TODO objecttype isn't ~really~ in index into meshes? map05104, obj 18 == two swords sticking in countertop; currently renders as one sword lying on the counter
 
+					var objIdx = obj.ObjectType;
+
 					var objValid = (obj.Transforms.XScale != 0 && obj.Transforms.YScale != 0 && obj.Transforms.ZScale != 0);
-					if (objValid && obj.ObjectType < meshes.Length)
+					if (objValid && objIdx < meshes.Length)
 					{
 						var x = -((((chunk.MapOffsetX - 6) / 12) * 12.0f) + obj.Transforms.XPosition);
 						var y = (float)-obj.Transforms.YPosition;
 						var z = ((((chunk.MapOffsetZ - 6) / 12) * 12.0f) + obj.Transforms.ZPosition);
 
-						foreach (var (objMesh, objTexture, chunkTransforms) in meshes[obj.ObjectType])
+						foreach (var (objMesh, objTexture, chunkTransformArray) in meshes[objIdx])
 						{
 							var objectMatrix = Matrix4.Identity;
+
+							var chunkTransformsIdx = 0;
+							var chunkTransforms = chunkTransformArray[chunkTransformsIdx];
 
 							objectMatrix *= Matrix4.CreateScale(chunkTransforms.XScale / 100.0f, chunkTransforms.YScale / 100.0f, chunkTransforms.ZScale / 100.0f);
 							objectMatrix *= Matrix4.CreateScale(obj.Transforms.XScale / 100.0f, obj.Transforms.YScale / 100.0f, obj.Transforms.ZScale / 100.0f);
@@ -255,6 +260,7 @@ namespace DisgaeaMap.MpdParser
 							objectMatrix *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(chunkTransforms.ZRotation + obj.Transforms.ZRotation));
 							objectMatrix *= Matrix4.CreateRotationY(MathHelper.DegreesToRadians(-90.0f + (-chunkTransforms.YRotation + -obj.Transforms.YRotation)));
 							objectMatrix *= Matrix4.CreateRotationX(MathHelper.DegreesToRadians(chunkTransforms.XRotation + obj.Transforms.XRotation));
+
 							objectMatrix *= Matrix4.CreateTranslation(-(chunkTransforms.XPosition / 10.0f) + x, -(chunkTransforms.YPosition / 10.0f) + y, (chunkTransforms.ZPosition / 10.0f) + z);
 
 							shader.SetUniformMatrix("local_matrix", false, objectMatrix);
