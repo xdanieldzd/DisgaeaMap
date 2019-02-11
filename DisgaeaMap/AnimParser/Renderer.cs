@@ -55,7 +55,7 @@ namespace DisgaeaMap.AnimParser
 			setAnimDataDict = new Dictionary<(ushort setId, int animIdx), Frame[]>();
 		}
 
-		public void Render(Matrix4 modelviewMatrix, ushort setId, int animIdx)
+		public void Render(Matrix4 modelviewMatrix, ushort setId, int animIdx, int weaponType)
 		{
 			if (shader == null) return;
 
@@ -131,23 +131,22 @@ namespace DisgaeaMap.AnimParser
 			float z = 0.0f;
 			foreach (var currentSprite in currentSprites)
 			{
-				z += 0.05f;
+				if (currentSprite.Unknown0x00 != 0 && currentSprite.Unknown0x00 != weaponType) continue;
 
-				// TODO: currently, if sprite uses external sheet, only allow axes
-				if (currentSprite.Unknown0x00 != 0 && currentSprite.Unknown0x00 != 6) continue;
+				z += 0.05f;
 
 				var spriteMatrix = Matrix4.Identity;
 
-				// TODO: very busted, need more research
-				//  also probably messed up wrt the shader & how billboarding is setup
+				// TODO: probably still kinda broken? also what's currentSprite.RotationCenterX used for? i think stuff works even without it...? tho what do i know, i'm glad to have gotten this far...
 
-				//spriteMatrix *= Matrix4.CreateTranslation(-currentSprite.RotationCenterX, -currentSprite.RotationCenterY, 0.0f);
-				//spriteMatrix *= Matrix4.CreateScale(currentSprite.ScaleX / 100.0f, currentSprite.ScaleY / 100.0f, 1.0f);
-				//spriteMatrix *= Matrix4.CreateRotationZ(-MathHelper.DegreesToRadians(currentSprite.RotationAngle));
-				//spriteMatrix *= Matrix4.CreateTranslation(currentSprite.Unknown0x14, currentSprite.Unknown0x16, 0.0f);
-				//spriteMatrix *= Matrix4.CreateTranslation(currentSprite.RotationCenterX, currentSprite.RotationCenterY, 0.0f);
+				spriteMatrix *= Matrix4.CreateTranslation(0.0f, currentSprite.RotationCenterY, 0.0f);
+				spriteMatrix *= Matrix4.CreateRotationZ(MathHelper.DegreesToRadians(currentSprite.RotationAngle));
+				spriteMatrix *= Matrix4.CreateTranslation(0.0f, -currentSprite.RotationCenterY, 0.0f);
 
-				spriteMatrix *= Matrix4.CreateTranslation(0.0f, 0.0f, z);
+				spriteMatrix *= Matrix4.CreateTranslation(0.0f, -(currentSprite.SourceHeight / 2.0f), 0.0f);
+				spriteMatrix *= Matrix4.CreateTranslation(-currentSprite.PositionX, -currentSprite.PositionY, z);
+
+				spriteMatrix *= Matrix4.CreateScale(currentSprite.ScaleX / 100.0f, currentSprite.ScaleY / 100.0f, 1.0f);
 
 				var spriteKey = (setId, currentSprite.SpriteSheetIndex, currentSprite.PaletteIndex, currentSprite.Unknown0x00);
 				if (spriteSheetTextureDict.ContainsKey(spriteKey))
@@ -158,6 +157,8 @@ namespace DisgaeaMap.AnimParser
 					shader.SetUniformMatrix("sprite_matrix", false, spriteMatrix);
 					shader.SetUniform("sprite_rect", new Vector4(currentSprite.SourceX, currentSprite.SourceY, currentSprite.SourceWidth, currentSprite.SourceHeight));
 					shader.SetUniform("sheet_size", new Vector2(currentTexture.Width, currentTexture.Height));
+					shader.SetUniform("flip_x", (currentSprite.Unknown0x1B >> 3) & 1);
+					shader.SetUniform("flip_y", (currentSprite.Unknown0x1B >> 4) & 1);
 					spriteMesh.Render();
 				}
 			}

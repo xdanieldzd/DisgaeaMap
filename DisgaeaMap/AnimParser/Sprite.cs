@@ -23,8 +23,8 @@ namespace DisgaeaMap.AnimParser
 		public ushort SourceHeight { get; private set; }
 		public ushort ScaleX { get; private set; }
 		public ushort ScaleY { get; private set; }
-		public short Unknown0x14 { get; private set; }
-		public short Unknown0x16 { get; private set; }
+		public short PositionX { get; private set; }
+		public short PositionY { get; private set; }
 		public ushort RotationAngle { get; private set; }
 		public byte Unknown0x1A { get; private set; }
 		public byte Unknown0x1B { get; private set; }       // flags? (mirroring?) verify me!
@@ -47,8 +47,8 @@ namespace DisgaeaMap.AnimParser
 			SourceHeight = reader.ReadUInt16();
 			ScaleX = reader.ReadUInt16();
 			ScaleY = reader.ReadUInt16();
-			Unknown0x14 = reader.ReadInt16();
-			Unknown0x16 = reader.ReadInt16();
+			PositionX = reader.ReadInt16();
+			PositionY = reader.ReadInt16();
 			RotationAngle = reader.ReadUInt16();
 			Unknown0x1A = reader.ReadByte();
 			Unknown0x1B = reader.ReadByte();

@@ -53,6 +53,7 @@ namespace DisgaeaMap
 		bool animTestMode;
 		ushort animTestSetId;
 		int animTestAnimIdx, animTestAnimIdxMax;
+		int animTestWeaponType;
 
 		Camera camera;
 		Shader floorShader, objectShader, animShader;
@@ -197,18 +198,24 @@ namespace DisgaeaMap
 				mainAnimBinary = LoadFile<AnmBinary>(mainAnimFilename = @"D:\Games\PlayStation 2\Disgaea Misc\Output\anm00.dat");
 				mainAnimRenderer = new Renderer(mainAnimBinary, animShader, modelviewMatrixName);
 
-				animTestMode = false;
+				animTestMode = true;
 
-				animTestSetId = 01070; // female samurai
 				animTestSetId = 00001; // laharl
+				animTestSetId = 00002; // etna
+				animTestSetId = 01070; // female samurai
 				animTestAnimIdx = 16;
 
-				//TEMPsetId = 02110; // dragon
-				//TEMPsetId = 02120; // zombie
-				//TEMPanimIdx = 0;
+				animTestWeaponType = 6;
 
-				//TEMPsetId = 02210; // prinny
-				//TEMPanimIdx = 23;
+				//animTestSetId = 02110; // dragon
+				//animTestSetId = 02120; // zombie
+				//animTestAnimIdx = 0;
+
+				//animTestSetId = 02210; // prinny
+				//animTestAnimIdx = 23;
+
+				//animTestSetId = 04008;
+				//animTestAnimIdx = 1;
 
 				var animSet = mainAnimBinary.GetAnimSet(animTestSetId);
 				if (animSet != null) animTestAnimIdxMax = animSet.AnimIdentifiers.Length;
@@ -260,6 +267,18 @@ namespace DisgaeaMap
 						if (animTestAnimIdx < 0) animTestAnimIdx = (animTestAnimIdxMax - 1);
 					}
 
+					if (kbdState[OpenTK.Input.Key.PageUp] && !lastKbd[OpenTK.Input.Key.PageUp])
+					{
+						animTestWeaponType--;
+						if (animTestWeaponType < 1) animTestWeaponType = 7;
+					}
+
+					if (kbdState[OpenTK.Input.Key.PageDown] && !lastKbd[OpenTK.Input.Key.PageDown])
+					{
+						animTestWeaponType++;
+						if (animTestWeaponType > 7) animTestWeaponType = 1;
+					}
+
 					lastKbd = kbdState;
 
 					if (renderControl.ClientRectangle.Contains(renderControl.PointToClient(Cursor.Position)) &&
@@ -272,7 +291,21 @@ namespace DisgaeaMap
 
 			if (animTestMode)
 			{
-				RenderAnimTest(animTestSetId, animTestAnimIdx);
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+				animShader.SetUniform(wireframeName, 0);
+				RenderAnimTest(animTestSetId, animTestAnimIdx, animTestWeaponType);
+
+				if (wireframe)
+				{
+					GL.Enable(EnableCap.PolygonOffsetLine);
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+					GL.PolygonOffset(-1.0f, 1.0f);
+					animShader.SetUniform(wireframeName, 1);
+					RenderAnimTest(animTestSetId, animTestAnimIdx, animTestWeaponType);
+
+					GL.Disable(EnableCap.PolygonOffsetLine);
+					GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+				}
 			}
 			else
 			{
@@ -282,10 +315,10 @@ namespace DisgaeaMap
 			RenderHUD();
 		}
 
-		private void RenderAnimTest(ushort setId, int animIdx)
+		private void RenderAnimTest(ushort setId, int animIdx, int weaponType)
 		{
 			Matrix4 tempMatrix = modelviewMatrix * camera.GetViewMatrix();
-			mainAnimRenderer?.Render(tempMatrix, setId, animIdx);
+			mainAnimRenderer?.Render(tempMatrix, setId, animIdx, weaponType);
 		}
 
 		private void RenderScene()
@@ -351,6 +384,9 @@ namespace DisgaeaMap
 
 			if (animShader != null)
 			{
+				GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+				animShader.SetUniform(wireframeName, 0);
+
 				foreach (var actor in mpdBinary.Actors)
 				{
 					if (!actorCache.ContainsKey(actor))
@@ -383,7 +419,7 @@ namespace DisgaeaMap
 				{
 					var position = actorCache[actor];
 					animShader.SetUniform("grid_position", position);
-					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1);
+					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1, 1);
 				}
 
 				GL.DepthMask(true);
@@ -391,7 +427,7 @@ namespace DisgaeaMap
 				{
 					var position = actorCache[actor];
 					animShader.SetUniform("grid_position", position);
-					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1);
+					mainAnimRenderer.Render(modelviewMatrix * camera.GetViewMatrix(), actor.ID, 1, 1);
 				}
 			}
 		}
@@ -439,8 +475,13 @@ namespace DisgaeaMap
 				{
 					builder.Append($"Animation Set {animTestSetId:D5}\n");
 					builder.Append($"Animation {animTestAnimIdx + 1}/{animTestAnimIdxMax}\n");
-					builder.Append("Numpad +: Next Animation\n");
+					builder.Append($"Weapon Type {animTestWeaponType}\n");
+					builder.AppendLine();
+					builder.Append($"F1: Wireframe ({wireframe})\n");
 					builder.Append("Numpad -: Prev Animation\n");
+					builder.Append("Numpad +: Next Animation\n");
+					builder.Append("Page Up: Prev Weapon Type\n");
+					builder.Append("Page Down: Next Weapon Type\n");
 				}
 				builder.AppendLine();
 				builder.Append($"F6: Anim Test Mode ({animTestMode})\n");

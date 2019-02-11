@@ -24,11 +24,11 @@ void main(void)
     
     mat4 mvmat = modelview_matrix * model;
     
-    mvmat[0][0] = sprite_rect.z / 32.0;
-    mvmat[1][1] = sprite_rect.w / 32.0;
+    mvmat[0][0] = -1.0 / 32.0;
+    mvmat[1][1] = 1.0 / 32.0;
     mvmat[2][2] = 1.0;
     mvmat[0][1] = mvmat[0][2] = mvmat[1][2] = 0.0;
     mvmat[1][0] = mvmat[2][0] = mvmat[2][1] = 0.0;
     
-    gl_Position = projection_matrix * mvmat * sprite_matrix * vec4(position.x, position.y, position.z, 1.0);
+    gl_Position = projection_matrix * mvmat * sprite_matrix * vec4(-position.x * sprite_rect.z, position.y * sprite_rect.w, position.z, 1.0);
 }
